@@ -136,6 +136,22 @@ class TopkReformulationPlannerCall(ReformulationPlannerCall):
                external_plan_file={external_plan_file})".format(**kwargs)]
 
 
+class TopkSuperMultisetReformulationPlannerCall(ReformulationPlannerCall):
+    def planner_args(self, **kwargs):
+        if "use_symmetries" in kwargs:
+            return ["--symmetries",
+              "sym=structural_symmetries(time_bound=0,search_symmetries=dks, \
+               stabilize_initial_state=true, keep_operator_symmetries=true)",
+               "--search", "forbid_iterative(reformulate = FORBID_MULTIPLE_PLAN_SUPERMULTISETS, \
+               extend_plans_with_symmetry=sym, dump=false, change_operator_names=true, \
+               number_of_plans={num_total_plans}, number_of_plans_to_read={num_plans_to_read}, \
+               external_plans_path={external_plans_path})".format(**kwargs)]
+        else:
+            return ["--search", "forbid_iterative(reformulate = FORBID_MULTIPLE_PLAN_SUPERMULTISETS, \
+                    dump=false, change_operator_names=true, number_of_plans={num_total_plans}, \
+                    number_of_plans_to_read={num_plans_to_read}, external_plans_path={external_plans_path})".format(**kwargs)]
+
+
 class BasePlannerCall(PlannerCall):
     def get_callstring(self, **kwargs):
         return [sys.executable, os.path.join(self.get_path(), 'fast-downward.py'), "--keep-sas-file"] + \
