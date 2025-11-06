@@ -1,27 +1,76 @@
 import os
-import path
+import shutil
+import re
+from dataclasses import dataclass
 
-fldr = os.listdir("found_plans/done")
+from relations import prefix_group_op_dom as relation
 
-MS = []
-for f in range(1, len(fldr) + 1):
-	fname = "found_plans/done/sas_plan." + str(f)
-	tmp = {}
-	lines = []
-	with open(fname, "r") as file:
-		lines = [line[1:-2] for line in file.readlines()]
-	for line in lines:
-		if line in tmp:
-			tmp[line] += 1
-		else:
-			tmp[line] = 1
-	if tmp not in MS:
-		MS.append(tmp)
-		print("New MS added to list:")
-		print(tmp)
-	else:
-		print(tmp)
-		print("already in list")
-		print(MS)
-		break
-print("total plans: {0}.\nUnique multisets: {1}".format(len(fldr), len(MS)))
+
+@dataclass
+class Plan:
+	name: str
+	cost: int
+	cost_str: str
+	plan: list
+
+
+# def filter_related_plans[T](relation: Callable[[List[T], List[T]], Optional[Bool]], ordered_plans: List[List[T]]) -> List[List[T]]
+def filter_related_plans(relation, ordered_plans) -> list:
+	# Does not find minimum cover set
+	unrelated_plans = []
+	for curr_plan in ordered_plans:
+		covered = False
+		for plan in unrelated_plans:
+			if relation(plan.plan, curr_plan.plan):
+				covered = True
+				# print(curr_plan[:-1])
+				# print("plan is related to")
+				# print(plan[:-1])
+				break
+		if not covered:
+			unrelated_plans.append(curr_plan)
+			# print("New plan added to list:")
+			# print(curr_plan[:-1])
+	return unrelated_plans
+
+
+def dump_plans(plan_path, plans):
+	for plan in plans:
+		with open(os.path.join(plan_path, plan.name), "w") as file:
+			for op in plan.plan:
+				file.write(f"({op})\n")
+			file.write(plan.cost_str)
+
+
+def read_plans():
+	found_plans_path = os.path.join("..", "found_plans", "done")
+	if not os.path.exists(found_plans_path):
+		print(f"No plan folder found at: {found_plans_path}")
+	plans = []
+	for plan_file in os.listdir(found_plans_path):
+		with open(os.path.join(found_plans_path, plan_file), "r") as file:
+			lines = file.readlines()
+			operations = [line[1:-2] for line in lines[:-1]]
+			cost_str = lines[-1]
+			cost = int(re.compile(r"cost = (\d+)").findall(cost_str)[0])
+			plans.append(
+				Plan(
+					name = plan_file,
+					cost = cost,
+					cost_str = cost_str,
+					plan = operations,
+				)
+			)
+	return plans
+
+
+if __name__ == "__main__":
+	# TODO: args with paths and stuff
+	new_plans_path = os.path.join("..", "found_plans", "unrelated_plans")
+	if os.path.exists(new_plans_path):
+		shutil.rmtree(new_plans_path)
+	os.mkdir(new_plans_path)
+	plans = read_plans()
+	plans.sort(key = lambda p: p.cost)
+	plans = filter_related_plans(relation, plans)
+	dump_plans(new_plans_path, plans)
