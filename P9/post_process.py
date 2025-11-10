@@ -1,9 +1,12 @@
+#! /bin/python3
+
+import argparse
 import os
 import shutil
 import re
 from dataclasses import dataclass
 
-from relations import prefix_group_op_dom as relation
+import relations
 
 
 @dataclass
@@ -12,6 +15,15 @@ class Plan:
 	cost: int
 	cost_str: str
 	plan: list
+
+
+def get_relation(relation_string):
+	if relation_string == "reorder":
+		return relations.reorder_relation
+	elif relation_string == "operator_dominance":
+		return relations.op_dom
+	elif relation_string == "group_prefix_operator_dominance":
+		return relations.prefix_group_op_dom
 
 
 # def filter_related_plans[T](relation: Callable[[List[T], List[T]], Optional[Bool]], ordered_plans: List[List[T]]) -> List[List[T]]
@@ -42,8 +54,7 @@ def dump_plans(plan_path, plans):
 			file.write(plan.cost_str)
 
 
-def read_plans():
-	found_plans_path = os.path.join("..", "found_plans", "done")
+def read_plans(found_plans_path):
 	if not os.path.exists(found_plans_path):
 		print(f"No plan folder found at: {found_plans_path}")
 	plans = []
@@ -65,12 +76,19 @@ def read_plans():
 
 
 if __name__ == "__main__":
-	# TODO: args with paths and stuff
-	new_plans_path = os.path.join("..", "found_plans", "unrelated_plans")
+	parser = argparse.ArgumentParser()
+	parser.add_argument("input_plan_path", help="Path to the plans to process")
+	parser.add_argument("output_plan_path", help="Path to output the filtered plans")
+	parser.add_argument("--relation", help="Choice of predefined relations", choices=["reorder", "operator_dominance", "group_prefix_operator_dominance"])
+	args = parser.parse_args()
+
+	relation = get_relation(args.relation)
+
+	new_plans_path = args.output_plan_path
 	if os.path.exists(new_plans_path):
 		shutil.rmtree(new_plans_path)
 	os.mkdir(new_plans_path)
-	plans = read_plans()
+	plans = read_plans(args.input_plan_path)
 	plans.sort(key = lambda p: p.cost)
 	plans = filter_related_plans(relation, plans)
 	dump_plans(new_plans_path, plans)
