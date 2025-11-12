@@ -1,4 +1,5 @@
 
+// ASS: Hvorfor har de det her check? Hvor ville man ellers definere den her class?
 #ifndef TASKS_SUPER_MULTISET_GROUPS_FORBID_REFORMULATED_TASK_H
 #define TASKS_SUPER_MULTISET_GROUPS_FORBID_REFORMULATED_TASK_H
 
@@ -51,6 +52,7 @@ namespace extra_tasks {
       public:
         SuperMultisetGroupsForbidReformulatedTask(
             const std::shared_ptr<AbstractTask> parent,
+            const std::function<int(const std::shared_ptr<AbstractTask>, int)> &f,
             std::vector<std::unordered_map<int, int>> &multisets, bool change_operator_names = false
         );
         virtual ~SuperMultisetGroupsForbidReformulatedTask() override = default;

@@ -12,6 +12,7 @@
 #include "../tasks/multisets_forbid_reformulated_task.h"
 #include "../tasks/plan_forbid_reformulated_task.h"
 #include "../tasks/root_task.h"
+#include "../tasks/super_multiset_groups_forbid_reformulated_task.h"
 #include "../tasks/super_multisets_forbid_reformulated_task.h"
 #include "../tasks/supersets_forbid_reformulated_task.h"
 #include "algorithms/ordered_set.h"
@@ -565,6 +566,8 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task(std::ve
         return create_reformulated_task_supersets(plans);
     } else if (reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISETS) {
         return create_reformulated_task_super_multisets(plans);
+    } else if (reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS) {
+        return create_reformulated_task_super_multiset_groups(plans);
     }
 
     return create_reformulated_task_multisets(plans);
@@ -621,6 +624,42 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
     return make_shared<extra_tasks::SuperMultisetsForbidReformulatedTask>(tasks::g_root_task, multisets, change_operator_names);
 }
 
+shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_multiset_groups(std::vector<vector<int>> &plans) const {
+    // Creating a multiset from each plan
+    unordered_map<string, int> very_good_solution = {};
+
+    // ASS: Surely this creates on shared map between all of them
+    auto f = [&very_good_solution](const std::shared_ptr<AbstractTask> task, int op_id) {
+        // ASS: check if this is right, it's prolly off by one or some shit, also what happens when no '_' in name?
+        auto actual_map = [](std::string op_name) {
+            // ASS: I can't figure out how to specify the type of the lambda (lmao), so make sure this is a string -> string function yourself
+            auto pos = op_name.find('_');
+            return op_name.substr(pos, op_name.length());
+        };
+
+        auto op_name = task->get_operator_name(op_id, false); // ASS: TODO: Wtf is 'isAxiom', and what should it be here?
+        // ASS: TODO: do stuff with the name
+        int group_id;
+        auto it = very_good_solution.find(op_name);
+        if (it == very_good_solution.end()) {
+            group_id = very_good_solution[op_name];
+        } else {
+            group_id = very_good_solution.size();
+            very_good_solution[op_name] = group_id;
+        }
+        return group_id;
+    };
+    std::vector<std::unordered_map<int, int>> multisets;
+    cout << "Forbidding " << plans.size() << " plans" << endl;
+    for (vector<int> plan : plans) {
+        // Building multiset for that plan
+        std::unordered_map<int, int> plan_multiset;
+        plan_to_group_multiset(plan, tasks::g_root_task, f, plan_multiset);
+        multisets.push_back(plan_multiset);
+    }
+    return make_shared<extra_tasks::SuperMultisetGroupsForbidReformulatedTask>(tasks::g_root_task, f, multisets, change_operator_names);
+}
+
 shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_supersets(std::vector<vector<int>> &plans) const {
     // Creating a multiset from each plan
     std::vector<std::unordered_set<int>> sets;
@@ -641,6 +680,18 @@ void ForbidIterativeSearch::plan_to_multiset(const std::vector<int> &plan, std::
             plan_multiset[op_no] = 1;
         } else {
             plan_multiset[op_no]++;
+        }
+    }
+}
+
+void ForbidIterativeSearch::plan_to_group_multiset(const std::vector<int> &plan, std::shared_ptr<AbstractTask> task, const std::function<int(const std::shared_ptr<AbstractTask>, int)> &f, std::unordered_map<int, int> &plan_multiset) const {
+    for (int op_no : plan) {
+        auto group_no = f(task, op_no);
+        auto it = plan_multiset.find(group_no);
+        if (it == plan_multiset.end()) {
+            plan_multiset[group_no] = 1;
+        } else {
+            plan_multiset[group_no]++;
         }
     }
 }

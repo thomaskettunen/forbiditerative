@@ -1,21 +1,25 @@
 #include "super_multiset_groups_forbid_reformulated_task.h"
 
+#include "../utils/system.h"
 #include <algorithm>
 #include <cassert>
-
-#include "../utils/system.h"
+#include <functional>
 
 using namespace std;
+
+auto example_f = [](const std::shared_ptr<AbstractTask> task, int op_id) { return 1; };
 
 namespace extra_tasks {
     SuperMultisetGroupsForbidReformulatedTask::SuperMultisetGroupsForbidReformulatedTask(
         const shared_ptr<AbstractTask> parent,
+        const std::function<int(const std::shared_ptr<AbstractTask>, int)> &f,
         std::vector<std::unordered_map<int, int>> &multisets, bool change_operator_names
     )
         : DelegatingTask(parent),
           forbidding_multisets(multisets),
           change_operator_names(change_operator_names) {
 
+        // ASS: TODO: All of this is unchaged, please change it
         // Creating the multiset union of all forbidding multisets (m_o)
         // cout << "Multisets:" << endl;
         for (auto fms : forbidding_multisets) {

@@ -27,7 +27,8 @@ enum class TaskReformulationType {
     FORBID_SINGLE_PLAN_MULTISET,
     FORBID_MULTIPLE_PLAN_MULTISETS,
     FORBID_MULTIPLE_PLAN_SUPERSETS,
-    FORBID_MULTIPLE_PLAN_SUPERMULTISETS
+    FORBID_MULTIPLE_PLAN_SUPERMULTISETS,
+    FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS,
 };
 
 class ForbidIterativeSearch : public SearchEngine {
@@ -72,9 +73,11 @@ class ForbidIterativeSearch : public SearchEngine {
     std::shared_ptr<AbstractTask> create_reformulated_task_multiset(std::vector<std::vector<int>> &plans) const;
     std::shared_ptr<AbstractTask> create_reformulated_task_multisets(std::vector<std::vector<int>> &plans) const;
     std::shared_ptr<AbstractTask> create_reformulated_task_super_multisets(std::vector<std::vector<int>> &plans) const;
+    std::shared_ptr<AbstractTask> create_reformulated_task_super_multiset_groups(std::vector<vector<int>> &plans) const;
     std::shared_ptr<AbstractTask> create_reformulated_task_supersets(std::vector<std::vector<int>> &plans) const;
 
     void plan_to_multiset(const std::vector<int> &plan, std::unordered_map<int, int> &plan_multiset) const;
+    void plan_to_group_multiset(const std::vector<int> &plan, std::shared_ptr<AbstractTask> task, const std::function<int(const std::shared_ptr<AbstractTask>, int)> &f, std::unordered_map<int, int> &plan_multiset) const;
     bool multiset_union(std::unordered_map<int, int> &multiset, const std::unordered_map<int, int> &from_multiset) const;
     bool enough_plans_found(int num_found_plans) const;
     void dump_plan_json(const Plan &plan, std::ostream &os) const;
