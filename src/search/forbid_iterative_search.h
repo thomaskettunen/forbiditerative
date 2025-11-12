@@ -1,8 +1,8 @@
 #ifndef FORBID_ITERATIVE_SEARCH_H
 #define FORBID_ITERATIVE_SEARCH_H
 
-#include "search_engine.h"
 #include "../plans/plans_graph.h"
+#include "search_engine.h"
 #include "utils/hash.h"
 
 #include <vector>
@@ -11,29 +11,27 @@ class Group;
 class Heuristic;
 
 namespace options {
-class OptionParser;
-class Options;
-}
-
+    class OptionParser;
+    class Options;
+} // namespace options
 
 namespace plans {
-enum class PlanOrdersReduction;
+    enum class PlanOrdersReduction;
 }
 
 enum class TaskReformulationType {
-	NONE,
-	NONE_FIND_ADDITIONAL_PLANS,
-	FORBID_SINGLE_PLAN, 
-	FORBID_MULTIPLE_PLANS,
-	FORBID_SINGLE_PLAN_MULTISET,
+    NONE,
+    NONE_FIND_ADDITIONAL_PLANS,
+    FORBID_SINGLE_PLAN,
+    FORBID_MULTIPLE_PLANS,
+    FORBID_SINGLE_PLAN_MULTISET,
     FORBID_MULTIPLE_PLAN_MULTISETS,
     FORBID_MULTIPLE_PLAN_SUPERSETS,
     FORBID_MULTIPLE_PLAN_SUPERMULTISETS
 };
 
-
-class ForbidIterativeSearch: public SearchEngine {
-private:
+class ForbidIterativeSearch : public SearchEngine {
+  private:
     // bool dump_forbid_plans_reformulation;
     // bool dump_forbid_multiset_reformulation;
     // bool dump_forbid_multisets_reformulation;
@@ -59,42 +57,40 @@ private:
     bool is_external_plans_path;
     bool is_json_file_to_dump;
 
-    void get_plan_for_op_ids(const std::vector<int>& plan_ids, Plan& plan) const;
+    void get_plan_for_op_ids(const std::vector<int> &plan_ids, Plan &plan) const;
 
-    plans::PlansGraph* create_forbid_graph_and_dump_multiple_plans(bool optimal, const Plan &current_plan);
+    plans::PlansGraph *create_forbid_graph_and_dump_multiple_plans(bool optimal, const Plan &current_plan);
 
-    void reformulate_and_dump_single_plan(const char* filename, const Plan &current_plan) const;
-    void reformulate_and_dump_multiple_plans_graph(const char* filename, bool optimal, const Plan &current_plan);
-    void reformulate_and_dump_multiset(const char* filename, std::vector<Plan> &current_plans);
-    void reformulate_and_dump_superset(const char* filename, std::vector<Plan> &current_plans);
-    void reformulate_and_dump_read_plans_and_dump_graph(const char* filename, std::vector<Plan> &current_plans) const;
+    void reformulate_and_dump_single_plan(const char *filename, const Plan &current_plan) const;
+    void reformulate_and_dump_multiple_plans_graph(const char *filename, bool optimal, const Plan &current_plan);
+    void reformulate_and_dump_multiset(const char *filename, std::vector<Plan> &current_plans);
+    void reformulate_and_dump_superset(const char *filename, std::vector<Plan> &current_plans);
+    void reformulate_and_dump_read_plans_and_dump_graph(const char *filename, std::vector<Plan> &current_plans) const;
     // void compute_metrics(const options::Options &opts, const std::vector<std::vector<const GlobalOperator *>>& plans);
 
-    std::shared_ptr<AbstractTask> create_reformulated_task(std::vector<std::vector<int>>& plans) const;
-    std::shared_ptr<AbstractTask> create_reformulated_task_multiset(std::vector<std::vector<int>>& plans) const;
-    std::shared_ptr<AbstractTask> create_reformulated_task_multisets(std::vector<std::vector<int>>& plans) const;
-    std::shared_ptr<AbstractTask> create_reformulated_task_super_multisets(std::vector<std::vector<int>>& plans) const;
-    std::shared_ptr<AbstractTask> create_reformulated_task_supersets(std::vector<std::vector<int>>& plans) const;
+    std::shared_ptr<AbstractTask> create_reformulated_task(std::vector<std::vector<int>> &plans) const;
+    std::shared_ptr<AbstractTask> create_reformulated_task_multiset(std::vector<std::vector<int>> &plans) const;
+    std::shared_ptr<AbstractTask> create_reformulated_task_multisets(std::vector<std::vector<int>> &plans) const;
+    std::shared_ptr<AbstractTask> create_reformulated_task_super_multisets(std::vector<std::vector<int>> &plans) const;
+    std::shared_ptr<AbstractTask> create_reformulated_task_supersets(std::vector<std::vector<int>> &plans) const;
 
-    void plan_to_multiset(const std::vector<int>& plan, std::unordered_map<int, int>& plan_multiset) const;
-    bool multiset_union(std::unordered_map<int, int>& multiset, const std::unordered_map<int, int>& from_multiset) const;
+    void plan_to_multiset(const std::vector<int> &plan, std::unordered_map<int, int> &plan_multiset) const;
+    bool multiset_union(std::unordered_map<int, int> &multiset, const std::unordered_map<int, int> &from_multiset) const;
     bool enough_plans_found(int num_found_plans) const;
-    void dump_plan_json(const Plan& plan, std::ostream& os) const;
+    void dump_plan_json(const Plan &plan, std::ostream &os) const;
 
-protected:
-
+  protected:
     virtual void initialize() {}
     virtual SearchStatus step();
 
     void reformulate_and_dump(bool optimal, std::vector<Plan> &plans);
-public:
+
+  public:
     ForbidIterativeSearch(const options::Options &opts);
     virtual ~ForbidIterativeSearch();
     virtual void print_statistics() const;
-//    virtual void save_plan_if_necessary() const;
+    //    virtual void save_plan_if_necessary() const;
     static void add_forbid_plan_reformulation_option(options::OptionParser &parser);
-
 };
-
 
 #endif
