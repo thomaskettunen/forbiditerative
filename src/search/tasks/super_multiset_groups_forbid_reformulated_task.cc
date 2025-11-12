@@ -1,4 +1,4 @@
-#include "super_multisets_forbid_reformulated_task.h"
+#include "super_multiset_groups_forbid_reformulated_task.h"
 
 #include <algorithm>
 #include <cassert>
@@ -8,7 +8,7 @@
 using namespace std;
 
 namespace extra_tasks {
-    SuperMultisetsForbidReformulatedTask::SuperMultisetsForbidReformulatedTask(
+    SuperMultisetGroupsForbidReformulatedTask::SuperMultisetGroupsForbidReformulatedTask(
         const shared_ptr<AbstractTask> parent,
         std::vector<std::unordered_map<int, int>> &multisets, bool change_operator_names
     )
@@ -73,18 +73,18 @@ namespace extra_tasks {
         initial_state_values.insert(initial_state_values.end(), forbidding_ops_to_var.size(), 0); // Extra var per op, tracking its application
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_number_appearances(int op_no) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_number_appearances(int op_no) const {
         auto id = max_count.find(op_no);
         if (id == max_count.end())
             return 0;
         return id->second;
     }
 
-    bool SuperMultisetsForbidReformulatedTask::is_operator_on_plans(int op_no) const {
+    bool SuperMultisetGroupsForbidReformulatedTask::is_operator_on_plans(int op_no) const {
         return forbidding_ops_to_var.find(op_no) != forbidding_ops_to_var.end();
     }
 
-    const SuperMultisetsForbidReformulatedTask::OperatorIndices &SuperMultisetsForbidReformulatedTask::get_parent_op_index(int op_index) const {
+    const SuperMultisetGroupsForbidReformulatedTask::OperatorIndices &SuperMultisetGroupsForbidReformulatedTask::get_parent_op_index(int op_index) const {
         // Getting the index of the corresponding operator in the parent task, and of a set from which it came
         if (op_index < (int)extra_op_ou_index_to_parent_op_index.size()) {
             return extra_op_ou_index_to_parent_op_index[op_index];
@@ -93,16 +93,16 @@ namespace extra_tasks {
         return extra_op_index_to_parent_op_set_indices[relative_index];
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_op_for_var_index(int var_index) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_op_for_var_index(int var_index) const {
         // Getting the op_no for the relative index of the extra var that tracks the op_no
         return var_no_to_op_no[var_index];
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_set_tracking_var_index() const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_set_tracking_var_index() const {
         return parent->get_num_variables();
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_op_tracking_var_index(int op_no) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_op_tracking_var_index(int op_no) const {
         auto it = forbidding_ops_to_var.find(op_no);
         assert(it != forbidding_ops_to_var.end());
         return parent->get_num_variables() + 1 + it->second;
@@ -110,11 +110,11 @@ namespace extra_tasks {
 
     // //////////////////
 
-    int SuperMultisetsForbidReformulatedTask::get_num_variables() const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_num_variables() const {
         return (int)initial_state_values.size();
     }
 
-    string SuperMultisetsForbidReformulatedTask::get_variable_name(int var) const {
+    string SuperMultisetGroupsForbidReformulatedTask::get_variable_name(int var) const {
         if (var < parent->get_num_variables())
             return parent->get_variable_name(var);
 
@@ -131,7 +131,7 @@ namespace extra_tasks {
         return "tracking_op_" + op_name + "_" + std::to_string(relative_index);
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_variable_domain_size(int var) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_variable_domain_size(int var) const {
         if (var < parent->get_num_variables())
             return parent->get_variable_domain_size(var);
 
@@ -148,20 +148,20 @@ namespace extra_tasks {
         return it->second + 1;
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_variable_axiom_layer(int var) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_variable_axiom_layer(int var) const {
         if (var < parent->get_num_variables())
             return parent->get_variable_axiom_layer(var);
 
         return -1;
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_variable_default_axiom_value(int var) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_variable_default_axiom_value(int var) const {
         if (var < parent->get_num_variables())
             return parent->get_variable_default_axiom_value(var);
         return 0;
     }
 
-    string SuperMultisetsForbidReformulatedTask::get_fact_name(const FactPair &fact) const {
+    string SuperMultisetGroupsForbidReformulatedTask::get_fact_name(const FactPair &fact) const {
         if (fact.var < parent->get_num_variables())
             return parent->get_fact_name(fact);
         int rel_var = fact.var - parent->get_num_variables();
@@ -172,7 +172,7 @@ namespace extra_tasks {
         return "Atom __operator_applied_" + std::to_string(fact.value) + "_times()";
     }
 
-    bool SuperMultisetsForbidReformulatedTask::are_facts_mutex(const FactPair &fact1, const FactPair &fact2) const {
+    bool SuperMultisetGroupsForbidReformulatedTask::are_facts_mutex(const FactPair &fact1, const FactPair &fact2) const {
         if (fact1.var < parent->get_num_variables() && fact2.var < parent->get_num_variables())
             return parent->are_facts_mutex(fact1, fact2);
 
@@ -184,7 +184,7 @@ namespace extra_tasks {
         return false;
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_operator_cost(int index, bool is_axiom) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_operator_cost(int index, bool is_axiom) const {
         if (is_axiom)
             return parent->get_operator_cost(index, is_axiom);
 
@@ -195,7 +195,7 @@ namespace extra_tasks {
         return 0;
     }
 
-    string SuperMultisetsForbidReformulatedTask::get_operator_name(int index, bool is_axiom) const {
+    string SuperMultisetGroupsForbidReformulatedTask::get_operator_name(int index, bool is_axiom) const {
         if (is_axiom)
             return parent->get_operator_name(index, is_axiom);
 
@@ -212,12 +212,12 @@ namespace extra_tasks {
         return "__###__goal_achieving__multiset_" + std::to_string(ids.multiset_id) + "_op_" + parent->get_operator_name(ids.parent_op_no, is_axiom) + "__index__" + std::to_string(ids.running_id);
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_num_operators() const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_num_operators() const {
         // The number of operators in the reformulation is number of original operators + extra goal achieving operators
         return (int)extra_op_ou_index_to_parent_op_index.size() + (int)extra_op_index_to_parent_op_set_indices.size();
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_num_operator_preconditions(int index, bool is_axiom) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_num_operator_preconditions(int index, bool is_axiom) const {
         if (is_axiom)
             return parent->get_num_operator_preconditions(index, is_axiom);
 
@@ -230,7 +230,7 @@ namespace extra_tasks {
         return parent->get_num_goals() + 2;
     }
 
-    FactPair SuperMultisetsForbidReformulatedTask::get_operator_precondition(
+    FactPair SuperMultisetGroupsForbidReformulatedTask::get_operator_precondition(
         int op_index, int fact_index, bool is_axiom
     ) const {
 
@@ -269,7 +269,7 @@ namespace extra_tasks {
         return FactPair(get_set_tracking_var_index(), ids.multiset_id);
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_num_operator_effects(int op_index, bool is_axiom) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_num_operator_effects(int op_index, bool is_axiom) const {
         if (is_axiom)
             return parent->get_num_operator_effects(op_index, is_axiom);
 
@@ -283,7 +283,7 @@ namespace extra_tasks {
         return 1;
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_num_operator_effect_conditions(
+    int SuperMultisetGroupsForbidReformulatedTask::get_num_operator_effect_conditions(
         int op_index, int eff_index, bool is_axiom
     ) const {
         if (is_axiom)
@@ -298,14 +298,14 @@ namespace extra_tasks {
         return 0;
     }
 
-    FactPair SuperMultisetsForbidReformulatedTask::get_operator_effect_condition(
+    FactPair SuperMultisetGroupsForbidReformulatedTask::get_operator_effect_condition(
         int op_index, int eff_index, int cond_index, bool is_axiom
     ) const {
         const OperatorIndices &ids = get_parent_op_index(op_index);
         return parent->get_operator_effect_condition(ids.parent_op_no, eff_index, cond_index, is_axiom);
     }
 
-    FactPair SuperMultisetsForbidReformulatedTask::get_operator_effect(
+    FactPair SuperMultisetGroupsForbidReformulatedTask::get_operator_effect(
         int op_index, int eff_index, bool is_axiom
     ) const {
         if (is_axiom)
@@ -326,25 +326,25 @@ namespace extra_tasks {
         return FactPair(get_set_tracking_var_index(), ids.multiset_id + 1);
     }
 
-    int SuperMultisetsForbidReformulatedTask::get_num_goals() const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_num_goals() const {
         return parent->get_num_goals() + 1;
     }
 
-    FactPair SuperMultisetsForbidReformulatedTask::get_goal_fact(int index) const {
+    FactPair SuperMultisetGroupsForbidReformulatedTask::get_goal_fact(int index) const {
         if (index < parent->get_num_goals())
             return parent->get_goal_fact(index);
 
         return FactPair(get_set_tracking_var_index(), (int)forbidding_multisets.size());
     }
 
-    vector<int> SuperMultisetsForbidReformulatedTask::get_initial_state_values() const {
+    vector<int> SuperMultisetGroupsForbidReformulatedTask::get_initial_state_values() const {
         return initial_state_values;
     }
 
-    void SuperMultisetsForbidReformulatedTask::convert_state_values_from_parent(
+    void SuperMultisetGroupsForbidReformulatedTask::convert_state_values_from_parent(
         vector<int> &
     ) const {
-        ABORT("SuperMultisetsForbidReformulatedTask doesn't support getting a state from the parent state.");
+        ABORT("SuperMultisetGroupsForbidReformulatedTask doesn't support getting a state from the parent state.");
     }
 
 } // namespace extra_tasks

@@ -1,6 +1,6 @@
 
-#ifndef TASKS_SUPER_MULTISETS_FORBID_REFORMULATED_TASK_H
-#define TASKS_SUPER_MULTISETS_FORBID_REFORMULATED_TASK_H
+#ifndef TASKS_SUPER_MULTISET_GROUPS_FORBID_REFORMULATED_TASK_H
+#define TASKS_SUPER_MULTISET_GROUPS_FORBID_REFORMULATED_TASK_H
 
 #include "../utils/logging.h"
 #include "delegating_task.h"
@@ -17,7 +17,7 @@
 
 namespace extra_tasks {
 
-    class SuperMultisetsForbidReformulatedTask : public tasks::DelegatingTask {
+    class SuperMultisetGroupsForbidReformulatedTask : public tasks::DelegatingTask {
 
         struct OperatorIndices {
             int parent_op_no;
@@ -49,11 +49,11 @@ namespace extra_tasks {
         int get_op_tracking_var_index(int op_no) const;
 
       public:
-        SuperMultisetsForbidReformulatedTask(
+        SuperMultisetGroupsForbidReformulatedTask(
             const std::shared_ptr<AbstractTask> parent,
             std::vector<std::unordered_map<int, int>> &multisets, bool change_operator_names = false
         );
-        virtual ~SuperMultisetsForbidReformulatedTask() override = default;
+        virtual ~SuperMultisetGroupsForbidReformulatedTask() override = default;
 
         virtual int get_num_variables() const override;
         virtual std::string get_variable_name(int var) const override;
