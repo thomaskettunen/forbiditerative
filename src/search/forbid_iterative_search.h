@@ -73,7 +73,7 @@ class ForbidIterativeSearch : public SearchEngine {
     std::shared_ptr<AbstractTask> create_reformulated_task_multiset(std::vector<std::vector<int>> &plans) const;
     std::shared_ptr<AbstractTask> create_reformulated_task_multisets(std::vector<std::vector<int>> &plans) const;
     std::shared_ptr<AbstractTask> create_reformulated_task_super_multisets(std::vector<std::vector<int>> &plans) const;
-    std::shared_ptr<AbstractTask> create_reformulated_task_super_multiset_groups(std::vector<vector<int>> &plans) const;
+    std::shared_ptr<AbstractTask> create_reformulated_task_super_multiset_groups(std::vector<std::vector<int>> &plans) const;
     std::shared_ptr<AbstractTask> create_reformulated_task_supersets(std::vector<std::vector<int>> &plans) const;
 
     void plan_to_multiset(const std::vector<int> &plan, std::unordered_map<int, int> &plan_multiset) const;
