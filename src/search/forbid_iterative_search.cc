@@ -558,7 +558,7 @@ void ForbidIterativeSearch::get_plan_for_op_ids(const vector<int> &plan_ids, Pla
 }
 
 shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task(std::vector<vector<int>> &plans) const {
-    assert(reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_MULTISETS || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERSETS || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISETS);
+    assert(reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_MULTISETS || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERSETS || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISETS || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS);
 
     if (reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET) {
         return create_reformulated_task_multiset(plans);
@@ -778,6 +778,7 @@ void ForbidIterativeSearch::add_forbid_plan_reformulation_option(OptionParser &p
     reformulate.push_back("FORBID_MULTIPLE_PLAN_MULTISETS");
     reformulate.push_back("FORBID_MULTIPLE_PLAN_SUPERSETS");
     reformulate.push_back("FORBID_MULTIPLE_PLAN_SUPERMULTISETS");
+    reformulate.push_back("FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS");
     parser.add_enum_option<TaskReformulationType>(
         "reformulate",
         reformulate,
