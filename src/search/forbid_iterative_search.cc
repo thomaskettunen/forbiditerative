@@ -234,7 +234,8 @@ void ForbidIterativeSearch::reformulate_and_dump(bool optimal, std::vector<Plan>
         reformulate_and_dump_multiple_plans_graph(filename, optimal, plans[0]);
     } else if (reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET ||
                reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_MULTISETS ||
-               reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISETS) {
+               reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISETS ||
+               reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS) {
         reformulate_and_dump_multiset(filename, plans);
     } else if (reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERSETS) {
         reformulate_and_dump_superset(filename, plans);
@@ -633,19 +634,22 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
         // ASS: check if this is right, it's prolly off by one or some shit, also what happens when no '_' in name?
         auto actual_map = [](std::string op_name) {
             // ASS: I can't figure out how to specify the type of the lambda (lmao), so make sure this is a string -> string function yourself
-            auto pos = op_name.find('_');
-            return op_name.substr(pos, op_name.length());
+            auto pos = op_name.find(' ');
+            auto group_name = op_name.substr(0, pos);
+            cout << "ASS: mapping " << op_name << " to " << group_name << endl;
+            return group_name;
         };
 
         auto op_name = task->get_operator_name(op_id, false); // ASS: TODO: Wtf is 'isAxiom', and what should it be here?
         // ASS: TODO: do stuff with the name
+        auto group_name = actual_map(op_name);
         int group_id;
-        auto it = very_good_solution.find(op_name);
+        auto it = very_good_solution.find(group_name);
         if (it == very_good_solution.end()) {
-            group_id = very_good_solution[op_name];
+            group_id = very_good_solution[group_name];
         } else {
             group_id = very_good_solution.size();
-            very_good_solution[op_name] = group_id;
+            very_good_solution[group_name] = group_id;
         }
         return group_id;
     };
