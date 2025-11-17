@@ -8,6 +8,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <functional>
 
 /*
   The class reformulates a planning task to forbid any plan
@@ -19,6 +20,8 @@
 namespace extra_tasks {
 
     class SuperMultisetGroupsForbidReformulatedTask : public tasks::DelegatingTask {
+
+        const std::function<int(const std::shared_ptr<AbstractTask>, int)> &f;
 
         struct OperatorIndices {
             int parent_op_no;
@@ -35,10 +38,10 @@ namespace extra_tasks {
         std::unordered_map<int, int> max_count;
         std::vector<OperatorIndices> extra_op_ou_index_to_parent_op_index;
         std::vector<OperatorIndices> extra_op_index_to_parent_op_set_indices;
-        std::unordered_map<int, int> forbidding_ops_to_var; // keep relative var id for each op in the forbidding sets
+        std::unordered_map<int, int> forbidding_groups_to_var; // keep relative var id for each group in the forbidding sets
 
         std::vector<int> initial_state_values;
-        std::vector<int> var_no_to_op_no;
+        std::vector<int> var_no_to_group_no;
 
         int get_number_appearances(int op_no) const;
         bool is_operator_on_plans(int op_no) const;

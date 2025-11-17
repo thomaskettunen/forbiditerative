@@ -16,6 +16,7 @@ namespace extra_tasks {
         std::vector<std::unordered_map<int, int>> &multisets, bool change_operator_names
     )
         : DelegatingTask(parent),
+          f(f),
           forbidding_multisets(multisets),
           change_operator_names(change_operator_names) {
 
@@ -24,13 +25,13 @@ namespace extra_tasks {
         // cout << "Multisets:" << endl;
         for (auto fms : forbidding_multisets) {
             for (auto e : fms) {
-                int op_no = e.first;
+                int group_no = e.first;
                 int count = e.second;
-                // cout << op_no << ": " << count << endl;
-                if (max_count.find(op_no) != max_count.end()) {
-                    max_count[op_no] = max(max_count[op_no], count);
+                // cout << group_no << ": " << count << endl;
+                if (max_count.find(group_no) != max_count.end()) {
+                    max_count[group_no] = max(max_count[group_no], count);
                 } else {
-                    max_count[op_no] = count;
+                    max_count[group_no] = count;
                 }
             }
         }
@@ -39,16 +40,16 @@ namespace extra_tasks {
         int var_id = 0;
         // for (auto e : max_count) {
         for (int op_no = 0; op_no < parent->get_num_operators(); ++op_no) {
-            int count = get_number_appearances(op_no);
+            int count = get_number_appearances(f(parent, op_no));
             for (int i = 0; i <= count; ++i) {
                 // cout << "Action for operator " << op_no << ", index " << i << endl;
                 extra_op_ou_index_to_parent_op_index.push_back(OperatorIndices(op_no, i, -1));
             }
             if (count == 0)
                 continue;
-            if (forbidding_ops_to_var.find(op_no) == forbidding_ops_to_var.end()) {
-                forbidding_ops_to_var[op_no] = var_id++;
-                var_no_to_op_no.push_back(op_no);
+            if (forbidding_groups_to_var.find(f(parent, op_no)) == forbidding_groups_to_var.end()) {
+                forbidding_groups_to_var[f(parent, op_no)] = var_id++;
+                var_no_to_group_no.push_back(f(parent, op_no));
             }
         }
 
@@ -56,12 +57,12 @@ namespace extra_tasks {
         int multiset_id = 0;
         for (auto fms : forbidding_multisets) {
             for (auto e : fms) {
-                int op_no = e.first;
+                int group_no = e.first;
                 int count = e.second; // m^j_o
                 for (int i = 0; i < count; ++i) {
-                    // cout << "Aux action for operator " << op_no << ", index " << i << ", multiset id " << multiset_id << endl;
+                    // cout << "Aux action for operator " << group_no << ", index " << i << ", multiset id " << multiset_id << endl;
 
-                    extra_op_index_to_parent_op_set_indices.push_back(OperatorIndices(op_no, i, multiset_id));
+                    extra_op_index_to_parent_op_set_indices.push_back(OperatorIndices(group_no, i, multiset_id));
                 }
             }
             multiset_id++;
@@ -74,7 +75,7 @@ namespace extra_tasks {
         // Creating initial state values by copying from the parent and pushing the new variables initial values
         initial_state_values = parent->get_initial_state_values();
         initial_state_values.push_back(0);                                                        // Extra var for tracking sets (domain size forbidding_sets.size() + 1)
-        initial_state_values.insert(initial_state_values.end(), forbidding_ops_to_var.size(), 0); // Extra var per op, tracking its application
+        initial_state_values.insert(initial_state_values.end(), forbidding_groups_to_var.size(), 0); // Extra var per op, tracking its application
     }
 
     int SuperMultisetGroupsForbidReformulatedTask::get_number_appearances(int op_no) const {
@@ -85,7 +86,7 @@ namespace extra_tasks {
     }
 
     bool SuperMultisetGroupsForbidReformulatedTask::is_operator_on_plans(int op_no) const {
-        return forbidding_ops_to_var.find(op_no) != forbidding_ops_to_var.end();
+        return forbidding_groups_to_var.find(op_no) != forbidding_groups_to_var.end();
     }
 
     const SuperMultisetGroupsForbidReformulatedTask::OperatorIndices &SuperMultisetGroupsForbidReformulatedTask::get_parent_op_index(int op_index) const {
@@ -99,7 +100,7 @@ namespace extra_tasks {
 
     int SuperMultisetGroupsForbidReformulatedTask::get_op_for_var_index(int var_index) const {
         // Getting the op_no for the relative index of the extra var that tracks the op_no
-        return var_no_to_op_no[var_index];
+        return var_no_to_group_no[var_index];
     }
 
     int SuperMultisetGroupsForbidReformulatedTask::get_set_tracking_var_index() const {
@@ -107,8 +108,8 @@ namespace extra_tasks {
     }
 
     int SuperMultisetGroupsForbidReformulatedTask::get_op_tracking_var_index(int op_no) const {
-        auto it = forbidding_ops_to_var.find(op_no);
-        assert(it != forbidding_ops_to_var.end());
+        auto it = forbidding_groups_to_var.find(f(parent, op_no));
+        assert(it != forbidding_groups_to_var.end());
         return parent->get_num_variables() + 1 + it->second;
     }
 
@@ -128,7 +129,7 @@ namespace extra_tasks {
             return "tracking_multisets";
 
         relative_index--;
-        assert(relative_index < (int)forbidding_ops_to_var.size());
+        assert(relative_index < (int)forbidding_groups_to_var.size());
         int op_no = get_op_for_var_index(relative_index);
         string op_name = parent->get_operator_name(op_no, false);
         std::replace(op_name.begin(), op_name.end(), ' ', '_');
