@@ -12,7 +12,7 @@ auto example_f = [](const std::shared_ptr<AbstractTask> task, int op_id) { retur
 namespace extra_tasks {
     SuperMultisetGroupsForbidReformulatedTask::SuperMultisetGroupsForbidReformulatedTask(
         const shared_ptr<AbstractTask> parent,
-        const std::function<int(const std::shared_ptr<AbstractTask>, int)> &f,
+        const std::function<int(std::shared_ptr<AbstractTask>, int)> f,
         std::vector<std::unordered_map<int, int>> &multisets, bool change_operator_names
     )
         : DelegatingTask(parent),

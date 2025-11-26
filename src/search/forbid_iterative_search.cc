@@ -626,33 +626,27 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
 }
 
 shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_multiset_groups(std::vector<vector<int>> &plans) const {
-    // Creating a multiset from each plan
-    unordered_map<string, int> very_good_solution = {};
+    auto very_good_solution = make_shared<unordered_map<string, int>>();
 
-    // ASS: Surely this creates on shared map between all of them
-    auto f = [&very_good_solution](const std::shared_ptr<AbstractTask> task, int op_id) {
-        // ASS: check if this is right, it's prolly off by one or some shit, also what happens when no '_' in name?
-        auto actual_map = [](std::string op_name) {
-            // ASS: I can't figure out how to specify the type of the lambda (lmao), so make sure this is a string -> string function yourself
-            auto pos = op_name.find(' ');
-            auto group_name = op_name.substr(0, pos);
-            cout << "ASS: mapping " << op_name << " to " << group_name << endl;
-            return group_name;
+    std::function<int(const std::shared_ptr<AbstractTask>, int)> f = [very_good_solution](const std::shared_ptr<AbstractTask> task, int op_id) {
+        // ASS: map from operator name (string) to group name (string)
+        std::function<string(string)> actual_map = [](std::string op_name) {
+            return op_name.substr(0, op_name.find(' '));
         };
 
-        auto op_name = task->get_operator_name(op_id, false); // ASS: TODO: Wtf is 'isAxiom', and what should it be here?
-        // ASS: TODO: do stuff with the name
+        auto op_name = task->get_operator_name(op_id, false);
         auto group_name = actual_map(op_name);
         int group_id;
-        auto it = very_good_solution.find(group_name);
-        if (it == very_good_solution.end()) {
-            group_id = very_good_solution[group_name];
+        auto it = very_good_solution->find(group_name);
+        if (it != very_good_solution->end()) {
+            group_id = (*very_good_solution)[group_name];
         } else {
-            group_id = very_good_solution.size();
-            very_good_solution[group_name] = group_id;
+            group_id = very_good_solution->size();
+            (*very_good_solution)[group_name] = group_id;
         }
         return group_id;
     };
+
     std::vector<std::unordered_map<int, int>> multisets;
     cout << "Forbidding " << plans.size() << " plans" << endl;
     for (vector<int> plan : plans) {

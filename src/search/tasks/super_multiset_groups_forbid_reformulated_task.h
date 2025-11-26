@@ -21,7 +21,7 @@ namespace extra_tasks {
 
     class SuperMultisetGroupsForbidReformulatedTask : public tasks::DelegatingTask {
 
-        const std::function<int(const std::shared_ptr<AbstractTask>, int)> &f;
+        const std::function<int(std::shared_ptr<AbstractTask>, int)> f;
 
         struct OperatorIndices {
             int parent_op_no;
@@ -55,7 +55,7 @@ namespace extra_tasks {
       public:
         SuperMultisetGroupsForbidReformulatedTask(
             const std::shared_ptr<AbstractTask> parent,
-            const std::function<int(const std::shared_ptr<AbstractTask>, int)> &f,
+            const std::function<int(std::shared_ptr<AbstractTask>, int)> f,
             std::vector<std::unordered_map<int, int>> &multisets, bool change_operator_names = false
         );
         virtual ~SuperMultisetGroupsForbidReformulatedTask() override = default;
