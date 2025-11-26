@@ -219,8 +219,7 @@ void AbstractTask::dump_mutexes(std::ostream& os) const {
         os << "begin_mutex_group" << endl;
         os << invariant_group.size() << endl;
         for (FactPair fact : invariant_group) {
-            os << fact.var << endl;
-            os << fact.value << endl;
+            os << fact.var << " " << fact.value << endl;
         }
         os << "end_mutex_group" << endl;
     }
