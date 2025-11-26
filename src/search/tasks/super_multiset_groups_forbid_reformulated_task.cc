@@ -74,7 +74,7 @@ namespace extra_tasks {
         //     one variable per action in the set union, counting their applications
         // Creating initial state values by copying from the parent and pushing the new variables initial values
         initial_state_values = parent->get_initial_state_values();
-        initial_state_values.push_back(0);                                                        // Extra var for tracking sets (domain size forbidding_sets.size() + 1)
+        initial_state_values.push_back(0);                                                           // Extra var for tracking sets (domain size forbidding_sets.size() + 1)
         initial_state_values.insert(initial_state_values.end(), forbidding_groups_to_var.size(), 0); // Extra var per op, tracking its application
     }
 

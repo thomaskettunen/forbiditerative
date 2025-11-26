@@ -6,9 +6,9 @@
 #include "../utils/logging.h"
 #include "delegating_task.h"
 
+#include <functional>
 #include <unordered_map>
 #include <vector>
-#include <functional>
 
 /*
   The class reformulates a planning task to forbid any plan
