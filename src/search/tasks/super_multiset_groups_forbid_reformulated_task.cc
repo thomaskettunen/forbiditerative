@@ -7,16 +7,16 @@
 
 using namespace std;
 
-auto example_f = [](const std::shared_ptr<AbstractTask> task, int op_id) { return 1; };
-
 namespace extra_tasks {
     SuperMultisetGroupsForbidReformulatedTask::SuperMultisetGroupsForbidReformulatedTask(
         const shared_ptr<AbstractTask> parent,
         const std::function<int(std::shared_ptr<AbstractTask>, int)> f,
+        const std::function<std::string(int)> get_group_name,
         std::vector<std::unordered_map<int, int>> &multisets, bool change_operator_names
     )
         : DelegatingTask(parent),
           f(f),
+          get_group_name(get_group_name),
           forbidding_multisets(multisets),
           change_operator_names(change_operator_names) {
 
@@ -98,7 +98,7 @@ namespace extra_tasks {
         return extra_op_index_to_parent_op_set_indices[relative_index];
     }
 
-    int SuperMultisetGroupsForbidReformulatedTask::get_op_for_var_index(int var_index) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_grp_for_var_index(int var_index) const {
         // Getting the op_no for the relative index of the extra var that tracks the op_no
         return var_no_to_group_no[var_index];
     }
@@ -126,14 +126,15 @@ namespace extra_tasks {
         int relative_index = var - parent->get_num_variables();
 
         if (relative_index == 0)
-            return "tracking_multisets";
+            return "var" + std::to_string(var) + "_tracking_multisets";
 
         relative_index--;
         assert(relative_index < (int)forbidding_groups_to_var.size());
-        int op_no = get_op_for_var_index(relative_index);
-        string op_name = parent->get_operator_name(op_no, false);
-        std::replace(op_name.begin(), op_name.end(), ' ', '_');
-        return "tracking_op_" + op_name + "_" + std::to_string(relative_index);
+        int group_no = get_grp_for_var_index(relative_index);
+        string group_name = get_group_name(group_no);
+        std::replace(group_name.begin(), group_name.end(), ' ', '_');
+
+        return "var" + std::to_string(var) + "_tracking_group_" + group_name + "(group" + std::to_string(relative_index) + ")";
     }
 
     int SuperMultisetGroupsForbidReformulatedTask::get_variable_domain_size(int var) const {
@@ -146,11 +147,11 @@ namespace extra_tasks {
 
         relative_index--;
         assert(relative_index < max_count.size());
-        int op_no = get_op_for_var_index(relative_index);
+        int group_no = get_grp_for_var_index(relative_index);
 
-        auto it = max_count.find(op_no);
+        auto it = max_count.find(group_no);
         assert(it != max_count.end());
-        return it->second + 1;
+        return it->second + 1; // ASS: hvorfor +1?
     }
 
     int SuperMultisetGroupsForbidReformulatedTask::get_variable_axiom_layer(int var) const {
@@ -174,7 +175,7 @@ namespace extra_tasks {
             // The fact value corresponds to the number of sets checked so far
             return "Atom __tested_multisets_" + std::to_string(fact.value) + "()";
         }
-        return "Atom __operator_applied_" + std::to_string(fact.value) + "_times()";
+        return "Atom __group_applied_" + std::to_string(fact.value) + "_times()";
     }
 
     bool SuperMultisetGroupsForbidReformulatedTask::are_facts_mutex(const FactPair &fact1, const FactPair &fact2) const {

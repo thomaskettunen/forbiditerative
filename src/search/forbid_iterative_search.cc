@@ -628,6 +628,13 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
 shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_multiset_groups(std::vector<vector<int>> &plans) const {
     auto very_good_solution = make_shared<unordered_map<string, int>>();
 
+    std::function<std::string(int)> get_group_name = [very_good_solution](int group_no) {
+        for (auto &it : *very_good_solution) {
+            if (it.second == group_no) return it.first;
+        }
+        return std::string("No matching group");
+    };
+
     std::function<int(const std::shared_ptr<AbstractTask>, int)> f = [very_good_solution](const std::shared_ptr<AbstractTask> task, int op_id) {
         // ASS: map from operator name (string) to group name (string)
         std::function<string(string)> actual_map = [](std::string op_name) {
@@ -655,7 +662,7 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
         plan_to_group_multiset(plan, tasks::g_root_task, f, plan_multiset);
         multisets.push_back(plan_multiset);
     }
-    return make_shared<extra_tasks::SuperMultisetGroupsForbidReformulatedTask>(tasks::g_root_task, f, multisets, change_operator_names);
+    return make_shared<extra_tasks::SuperMultisetGroupsForbidReformulatedTask>(tasks::g_root_task, f, get_group_name, multisets, change_operator_names);
 }
 
 shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_supersets(std::vector<vector<int>> &plans) const {
