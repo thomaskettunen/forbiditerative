@@ -51,7 +51,7 @@ namespace extra_tasks {
         int get_grp_for_var_index(int var_index) const;
 
         int get_set_tracking_var_index() const;
-        int get_op_tracking_var_index(int op_no) const;
+        int get_group_tracking_var_index(int op_no) const;
 
       public:
         SuperMultisetGroupsForbidReformulatedTask(

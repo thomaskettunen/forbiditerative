@@ -53,7 +53,7 @@ namespace extra_tasks {
             }
         }
 
-        // Then come operators that allow for reaching the goal: o_i,j for o in forbidding_multisets[j], 0<=i< m^j_o
+        //. Then come operators that allow for reaching the goal: o_i,j for o in forbidding_multisets[j], 0<=i< m^j_o
         int multiset_id = 0;
         for (auto fms : forbidding_multisets) {
             for (auto e : fms) {
@@ -68,14 +68,14 @@ namespace extra_tasks {
             multiset_id++;
         }
 
-        // The variables include
-        //     the original ones
-        //     one variable for tracking the sets
-        //     one variable per action in the set union, counting their applications
-        // Creating initial state values by copying from the parent and pushing the new variables initial values
+        //. The variables include
+        //.     the original ones
+        //.     one variable for tracking the sets
+        //.     one variable per action in the set union, counting their applications
+        //. Creating initial state values by copying from the parent and pushing the new variables initial values
         initial_state_values = parent->get_initial_state_values();
-        initial_state_values.push_back(0);                                                           // Extra var for tracking sets (domain size forbidding_sets.size() + 1)
-        initial_state_values.insert(initial_state_values.end(), forbidding_groups_to_var.size(), 0); // Extra var per op, tracking its application
+        initial_state_values.push_back(0);                                                           //. Extra var for tracking sets (domain size forbidding_sets.size() + 1)
+        initial_state_values.insert(initial_state_values.end(), forbidding_groups_to_var.size(), 0); //. Extra var per op, tracking its application
     }
 
     int SuperMultisetGroupsForbidReformulatedTask::get_number_appearances(int op_no) const {
@@ -107,13 +107,11 @@ namespace extra_tasks {
         return parent->get_num_variables();
     }
 
-    int SuperMultisetGroupsForbidReformulatedTask::get_op_tracking_var_index(int op_no) const {
+    int SuperMultisetGroupsForbidReformulatedTask::get_group_tracking_var_index(int op_no) const {
         auto it = forbidding_groups_to_var.find(f(parent, op_no));
         assert(it != forbidding_groups_to_var.end());
         return parent->get_num_variables() + 1 + it->second;
     }
-
-    // //////////////////
 
     int SuperMultisetGroupsForbidReformulatedTask::get_num_variables() const {
         return (int)initial_state_values.size();
@@ -215,7 +213,7 @@ namespace extra_tasks {
             }
             return name;
         }
-        return "__###__goal_achieving__multiset_" + std::to_string(ids.multiset_id) + "_op_" + parent->get_operator_name(ids.parent_op_no, is_axiom) + "__index__" + std::to_string(ids.running_id);
+        return "__###__goal_achieving__multiset_" + std::to_string(ids.multiset_id) + "_group_" + get_group_name(ids.parent_op_no) + "__index__" + std::to_string(ids.running_id);
     }
 
     int SuperMultisetGroupsForbidReformulatedTask::get_num_operators() const {
@@ -244,21 +242,26 @@ namespace extra_tasks {
             return parent->get_operator_precondition(op_index, fact_index, is_axiom);
 
         if (op_index < (int)extra_op_ou_index_to_parent_op_index.size()) {
+            // ASS: ids(o_i) = o
             const OperatorIndices &ids = get_parent_op_index(op_index);
 
             if (fact_index < parent->get_num_operator_preconditions(ids.parent_op_no, is_axiom)) {
+                // ASS: Pre(o_i) inlcudes Pre(o)
                 return parent->get_operator_precondition(ids.parent_op_no, fact_index, is_axiom);
             }
             // Extra pre
+            // ASS: Pre(o_i) inlcudes v_bar = 0
             if (fact_index == parent->get_num_operator_preconditions(ids.parent_op_no, is_axiom)) {
                 return FactPair(get_set_tracking_var_index(), 0);
             }
             // op tracking pre
-            return FactPair(get_op_tracking_var_index(ids.parent_op_no), ids.running_id);
+            // ASS: Pre(o_i) inlcudes v_o = i
+            return FactPair(get_group_tracking_var_index(ids.parent_op_no), ids.running_id);
         }
 
         // Extra op
         // The first preconditions is the original goal
+        // ASS: Pre(o_i,j) inlcudes s_star
         if (fact_index < parent->get_num_goals()) {
             return parent->get_goal_fact(fact_index);
         }
@@ -267,11 +270,13 @@ namespace extra_tasks {
         const OperatorIndices &ids = get_parent_op_index(op_index);
         assert(ids.multiset_id >= 0);
         // Then comes the op tracking var
+        // ASS: Pre(o_i,j) inlcudes v_o = i
         if (fact_index == parent->get_num_goals()) {
-            return FactPair(get_op_tracking_var_index(ids.parent_op_no), ids.running_id);
+            return FactPair(get_group_tracking_var_index(ids.parent_op_no), ids.running_id);
         }
 
         // Then comes the set tracking var
+        // ASS: Pre(o_i,j) inlcudes v_bar = j (-1)
         return FactPair(get_set_tracking_var_index(), ids.multiset_id);
     }
 
@@ -319,16 +324,19 @@ namespace extra_tasks {
 
         if (op_index < (int)extra_op_ou_index_to_parent_op_index.size()) {
             const OperatorIndices &ids = get_parent_op_index(op_index);
+            // ASS: eff(o_i) includes all eff(o)
             if (eff_index < parent->get_num_operator_effects(ids.parent_op_no, is_axiom)) {
                 return parent->get_operator_effect(ids.parent_op_no, eff_index, is_axiom);
             }
             // Possible extra effect
-            return FactPair(get_op_tracking_var_index(ids.parent_op_no), ids.running_id + 1);
+            // ASS: is o_i, increment counter
+            return FactPair(get_group_tracking_var_index(ids.parent_op_no), ids.running_id + 1);
         }
         // Extra op
         // Getting the parent op_id and the set id
         const OperatorIndices &ids = get_parent_op_index(op_index);
         assert(ids.multiset_id >= 0);
+        // ASS: is o_i,j, increment other counter
         return FactPair(get_set_tracking_var_index(), ids.multiset_id + 1);
     }
 
