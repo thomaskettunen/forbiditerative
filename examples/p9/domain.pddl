@@ -7,13 +7,14 @@
                 (LOCATION ?loc)
                 (empty ?car) 
 		(at ?obj ?loc)
-		(in ?obj1 ?obj2))
+		(in ?obj1 ?obj2)
+    (connected ?loc1 ?loc2))
   ; (:types )		; default object
 
 (:action LOAD-TRUCK
   :parameters
-   (?obj
-    ?truck
+   (?truck
+    ?obj
     ?loc)
   :precondition
    (and (OBJ ?obj) (TRUCK ?truck) (LOCATION ?loc)
@@ -23,8 +24,8 @@
 
 (:action UNLOAD-TRUCK
   :parameters
-   (?obj
-    ?truck
+   (?truck
+    ?obj
     ?loc)
   :precondition
    (and (OBJ ?obj) (TRUCK ?truck) (LOCATION ?loc)
@@ -41,14 +42,14 @@
     )
   :precondition
    (and (TRUCK ?truck) (LOCATION ?loc-from) (LOCATION ?loc-to)
-   (at ?truck ?loc-from))
+   (at ?truck ?loc-from) (or (connected ?loc-from ?loc-to) (connected ?loc-to ?loc-from)))
   :effect
    (and (not (at ?truck ?loc-from)) (at ?truck ?loc-to)))
 
 (:action LOAD-CAR
   :parameters
-   (?obj
-    ?car
+   (?car
+    ?obj
     ?loc)
   :precondition
    (and (OBJ ?obj) (CAR ?car) (LOCATION ?loc)
@@ -58,8 +59,8 @@
 
 (:action UNLOAD-CAR
   :parameters
-   (?obj
-    ?car
+   (?car
+    ?obj
     ?loc)
   :precondition
    (and (OBJ ?obj) (CAR ?car) (LOCATION ?loc)
@@ -76,7 +77,7 @@
     )
   :precondition
    (and (CAR ?car) (LOCATION ?loc-from) (LOCATION ?loc-to)
-   (at ?car ?loc-from))
+   (at ?car ?loc-from) (or (connected ?loc-from ?loc-to) (connected ?loc-to ?loc-from)))
   :effect
    (and (not (at ?car ?loc-from)) (at ?car ?loc-to)))
 )
