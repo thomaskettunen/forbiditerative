@@ -11,8 +11,13 @@
 # ./post_process.py <input-folder> <output-folder> <relation>
 ./post_process.py ../found_plans/done ../found_plans/unrelated_plans operator_dominance
 ```
-## Group Prefix Operator Dominance Relation
+## Prefix Group Operator Dominance Relation
 ```
 # ./post_process.py <input-folder> <output-folder> <relation>
-./post_process.py ../found_plans/done ../found_plans/unrelated_plans group_prefix_operator_dominance
+./post_process.py ../found_plans/done ../found_plans/unrelated_plans prefix_group_operator_dominance
+```
+## Truck Group Operator Dominance Relation
+```
+# ./post_process.py <input-folder> <output-folder> <relation>
+./post_process.py ../found_plans/done ../found_plans/unrelated_plans truck_group_operator_dominance
 ```

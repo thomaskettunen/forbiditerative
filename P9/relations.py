@@ -57,3 +57,4 @@ def group_op_dom(f, aa, bb):
 
 from functools import partial
 prefix_group_op_dom = partial(group_op_dom, lambda o: o.split(' ')[0])
+truck_group_op_dom = partial(group_op_dom, lambda o: f"{o.split(' ')[0]}_{o.split(' ')[1]}")
