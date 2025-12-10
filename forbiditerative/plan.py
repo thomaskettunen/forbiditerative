@@ -29,7 +29,11 @@ def get_planner(args):
     if args.planner == "subsets_topq":
         return planners.SubsetTopQualityPlanner(args)
     if args.planner == "submultisets_topq":
-        return planners.SubMultisetTopQualityPlanner(args)                
+        return planners.SubMultisetTopQualityPlanner(args)
+    if args.planner == "submultisets_topk":
+        return planners.SubMultisetTopKPlanner(args)
+    if args.planner == "supermultisetgroups_topk":
+        return planners.SuperMultisetGroupsTopKPlanner(args)
     if args.planner == "topk_via_unordered_topq":
         return planners.TopKViaUnorderedTopQualityPlanner(args)
     if args.planner == "topq_via_unordered_topq":
@@ -331,7 +335,7 @@ if __name__ == "__main__":
                                         "this path does not exist, it tries the directory "
                                         "'<repo>/builds/BUILD/bin', where the build script creates "
                                         "them by default.")
-    parser.add_argument("--planner", help="The type of planner", choices=["topk", "topk_via_unordered_topq", "unordered_topq",  "extended_unordered_topq", "topq_via_topk", "topq_via_unordered_topq", "subsets_topq", "submultisets_topq", "diverse"])
+    parser.add_argument("--planner", help="The type of planner", choices=["topk", "topk_via_unordered_topq", "unordered_topq",  "extended_unordered_topq", "topq_via_topk", "topq_via_unordered_topq", "subsets_topq", "submultisets_topq", "submultisets_topk", "supermultisetgroups_topk", "diverse"])
     parser.add_argument("--domain", help="PDDL domain file")
     parser.add_argument("--problem", help="PDDL problem file")
     parser.add_argument("--sas-file", help="SAS+ problem file")

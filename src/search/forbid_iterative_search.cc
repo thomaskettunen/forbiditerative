@@ -1,35 +1,34 @@
 #include "forbid_iterative_search.h"
 
-#include "evaluation_context.h"
-#include "option_parser.h"
-#include "plugin.h"
-#include "plan_manager.h"
 #include "../structural_symmetries/group.h"
 #include "../structural_symmetries/operator_permutation.h"
+#include "evaluation_context.h"
+#include "option_parser.h"
+#include "plan_manager.h"
+#include "plugin.h"
 
-#include "algorithms/ordered_set.h"
-#include "../tasks/root_task.h"
 #include "../tasks/graph_forbid_reformulated_task.h"
-#include "../tasks/plan_forbid_reformulated_task.h"
 #include "../tasks/multiset_forbid_reformulated_task.h"
 #include "../tasks/multisets_forbid_reformulated_task.h"
+#include "../tasks/plan_forbid_reformulated_task.h"
+#include "../tasks/root_task.h"
+#include "../tasks/super_multiset_groups_forbid_reformulated_task.h"
 #include "../tasks/super_multisets_forbid_reformulated_task.h"
 #include "../tasks/supersets_forbid_reformulated_task.h"
-
+#include "algorithms/ordered_set.h"
 
 #include "utils/countdown_timer.h"
 #include "utils/system.h"
 #include "utils/timer.h"
 
-#include <unordered_set>
 #include <cassert>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <limits>
+#include <unordered_set>
 
 using namespace std;
 // using utils::ExitCode;
-
 
 ForbidIterativeSearch::ForbidIterativeSearch(const Options &opts)
     : SearchEngine(opts),
@@ -52,7 +51,7 @@ ForbidIterativeSearch::ForbidIterativeSearch(const Options &opts)
       is_json_file_to_dump(false) {
 
     if (opts.contains("extend_plans_with_symmetry")) {
-        symmetry_group =  opts.get<shared_ptr<Group>>("extend_plans_with_symmetry");
+        symmetry_group = opts.get<shared_ptr<Group>>("extend_plans_with_symmetry");
         if (!symmetry_group->is_stabilizing_initial_state()) {
             cerr << "For extending plans with symmetries we need to stabilize the initial state" << endl;
             utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -68,7 +67,7 @@ ForbidIterativeSearch::ForbidIterativeSearch(const Options &opts)
     if (opts.contains("external_plan_file")) {
 
         if (reformulate != TaskReformulationType::NONE &&
-            reformulate != TaskReformulationType::NONE_FIND_ADDITIONAL_PLANS && 
+            reformulate != TaskReformulationType::NONE_FIND_ADDITIONAL_PLANS &&
             reformulate != TaskReformulationType::FORBID_MULTIPLE_PLANS) {
             cerr << "Only FORBID_MULTIPLE_PLANS, NONE, or NONE_FIND_ADDITIONAL_PLANS should be used with a single input plan" << endl;
             utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -103,16 +102,15 @@ ForbidIterativeSearch::~ForbidIterativeSearch() {
 }
 
 void ForbidIterativeSearch::print_statistics() const {
-
 }
 
 SearchStatus ForbidIterativeSearch::step() {
     if (is_external_plan_file) {
         // If the option is used, a single plan is loaded, and a reformulation is performed
-        //TODO: Check if can be unified with  external_plans_path
+        // TODO: Check if can be unified with  external_plans_path
         Plan plan;
         plan_manager.load_plan(external_plan_file, plan, task_proxy);
-        vector<Plan> plans = { plan };
+        vector<Plan> plans = {plan};
 
         if (reformulate == TaskReformulationType::NONE_FIND_ADDITIONAL_PLANS) {
             // No reformulation, only dump plans
@@ -122,14 +120,14 @@ SearchStatus ForbidIterativeSearch::step() {
             shared_ptr<plans::PlansGraph> forbid_graph = make_shared<plans::PlansGraph>(task_proxy, number_of_plans, true);
             forbid_graph->set_num_edges_until_greedy_clean(number_of_edges_until_greedy_clean);
             forbid_graph->dump_reordering_plans_neighbours_interfere(plans[0]);
-                        
+
             if (symmetry_group) {
                 utils::g_log << "Extending partial order plans with symmetries... " << endl;
                 // Going over the symmetries until fixed point is reached
                 int num_symmetries = symmetry_group->get_num_generators();
                 while (!enough_plans_found(forbid_graph->get_number_of_plans_dumped())) {
                     bool change = false;
-                    for (int i=0; i < num_symmetries; ++i) {
+                    for (int i = 0; i < num_symmetries; ++i) {
                         bool curr_change = forbid_graph->add_symmetry(symmetry_group, i);
                         if (enough_plans_found(forbid_graph->get_number_of_plans_dumped()))
                             break;
@@ -145,9 +143,9 @@ SearchStatus ForbidIterativeSearch::step() {
             forbid_graph->dump_plans(plan_manager, number_of_plans);
             utils::g_log << "Done dumping plans" << endl;
         } else {
-            //TODO: Check why optimal is false here
-            // reformulate_and_dump(false, plans);
-            // Changed to true
+            // TODO: Check why optimal is false here
+            //  reformulate_and_dump(false, plans);
+            //  Changed to true
             reformulate_and_dump(true, plans);
         }
         utils::exit_with(utils::ExitCode::SUCCESS);
@@ -159,7 +157,7 @@ SearchStatus ForbidIterativeSearch::step() {
             ofstream os(json_file_to_dump.c_str());
             os << "{ \"plans\" : [" << endl;
             bool first_dumped = false;
-            for (const Plan& plan : plans) {
+            for (const Plan &plan : plans) {
                 if (first_dumped)
                     os << "," << endl;
                 dump_plan_json(plan, os);
@@ -170,10 +168,10 @@ SearchStatus ForbidIterativeSearch::step() {
         // if (reformulate == TaskReformulationType::NONE) {
         //     utils::exit_with(utils::ExitCode::SUCCESS);
         // }
-        
+
         utils::HashSet<Plan> unique_plans;
         vector<Plan> ordered_unique_plans;
-        for (const Plan& plan : plans) {
+        for (const Plan &plan : plans) {
             auto it = unique_plans.insert(plan);
             if (it.second) {
                 ordered_unique_plans.push_back(plan);
@@ -182,18 +180,18 @@ SearchStatus ForbidIterativeSearch::step() {
         reformulate_and_dump(false, ordered_unique_plans);
         utils::exit_with(utils::ExitCode::SUCCESS);
     }
-    return SOLVED; 
+    return SOLVED;
 }
 
-void ForbidIterativeSearch::dump_plan_json(const Plan& plan, std::ostream& os) const {
+void ForbidIterativeSearch::dump_plan_json(const Plan &plan, std::ostream &os) const {
     int plan_cost = calculate_plan_cost(plan, task_proxy);
     os << "{ ";
-    os << "\"cost\" : " << plan_cost << "," << endl; 
+    os << "\"cost\" : " << plan_cost << "," << endl;
     os << "\"actions\" : [" << endl;
     if (plan.size() > 0) {
         OperatorsProxy operators = task_proxy.get_operators();
 
-        os << "\""  << operators[plan[0].get_index()].get_name() << "\"";
+        os << "\"" << operators[plan[0].get_index()].get_name() << "\"";
         for (size_t i = 1; i < plan.size(); ++i) {
             os << ", \"" << operators[plan[i].get_index()].get_name() << "\"";
         }
@@ -221,22 +219,23 @@ void ForbidIterativeSearch::dump_plan_json(const Plan& plan, std::ostream& os) c
 // void ForbidIterativeSearch::save_plan_if_necessary() const {
 
 //     // In case we forbid multiple plans, we already do that
-//     if (reformulate == TaskReformulationType::FORBID_MULTIPLE_PLANS || 
-//         reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET || 
+//     if (reformulate == TaskReformulationType::FORBID_MULTIPLE_PLANS ||
+//         reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET ||
 //         reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_MULTISETS)
 //         return;
 //     SearchEngine::save_plan_if_necessary();
 // }
 
-void ForbidIterativeSearch::reformulate_and_dump(bool optimal, std::vector<Plan>& plans) {
-    const char* filename = "reformulated_output.sas";
+void ForbidIterativeSearch::reformulate_and_dump(bool optimal, std::vector<Plan> &plans) {
+    const char *filename = "reformulated_output.sas";
     if (reformulate == TaskReformulationType::FORBID_SINGLE_PLAN) {
         reformulate_and_dump_single_plan(filename, plans[0]);
     } else if (reformulate == TaskReformulationType::FORBID_MULTIPLE_PLANS) {
         reformulate_and_dump_multiple_plans_graph(filename, optimal, plans[0]);
-    } else if (reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET || 
+    } else if (reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET ||
                reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_MULTISETS ||
-               reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISETS) {
+               reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISETS ||
+               reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS) {
         reformulate_and_dump_multiset(filename, plans);
     } else if (reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERSETS) {
         reformulate_and_dump_superset(filename, plans);
@@ -247,19 +246,19 @@ void ForbidIterativeSearch::reformulate_and_dump(bool optimal, std::vector<Plan>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ForbidIterativeSearch::reformulate_and_dump_single_plan(const char* filename, const Plan &current_plan) const {
+void ForbidIterativeSearch::reformulate_and_dump_single_plan(const char *filename, const Plan &current_plan) const {
     ofstream os(filename);
     vector<int> forbid_plan;
-    for(size_t i = 0; i < current_plan.size(); ++i) {
+    for (size_t i = 0; i < current_plan.size(); ++i) {
         forbid_plan.push_back(current_plan[i].get_index());
     }
     shared_ptr<AbstractTask> reformulated_task = make_shared<extra_tasks::PlanForbidReformulatedTask>(tasks::g_root_task, move(forbid_plan));
     reformulated_task->dump_to_SAS(os);
 }
 
-plans::PlansGraph* ForbidIterativeSearch::create_forbid_graph_and_dump_multiple_plans(bool optimal, const Plan &current_plan) {
+plans::PlansGraph *ForbidIterativeSearch::create_forbid_graph_and_dump_multiple_plans(bool optimal, const Plan &current_plan) {
     assert(number_of_plans >= 0);
-    plans::PlansGraph* forbid_graph = new plans::PlansGraph(task_proxy, number_of_plans, optimal);
+    plans::PlansGraph *forbid_graph = new plans::PlansGraph(task_proxy, number_of_plans, optimal);
     forbid_graph->set_num_edges_until_greedy_clean(number_of_edges_until_greedy_clean);
     utils::g_log << "Adding the found plan:  ";
     if (reduce_plan_orders == plans::PlanOrdersReduction::NONE) {
@@ -267,8 +266,8 @@ plans::PlansGraph* ForbidIterativeSearch::create_forbid_graph_and_dump_multiple_
     } else if (reduce_plan_orders == plans::PlanOrdersReduction::NEIGHBOURS_INTERFERE) {
         utils::g_log << "Creating partial order plans by reducing orders between non-interfering neigbours... " << endl;
     } else if (reduce_plan_orders == plans::PlanOrdersReduction::NAIVE_ALL ||
-            reduce_plan_orders == plans::PlanOrdersReduction::NAIVE_ALL_DFS ||
-            reduce_plan_orders == plans::PlanOrdersReduction::NAIVE_ALL_DFS_NODUP) {
+               reduce_plan_orders == plans::PlanOrdersReduction::NAIVE_ALL_DFS ||
+               reduce_plan_orders == plans::PlanOrdersReduction::NAIVE_ALL_DFS_NODUP) {
         utils::g_log << "Creating partial order plans by naively reducing all orders... " << endl;
     }
     forbid_graph->add_plan(plan_manager, current_plan, reduce_plan_orders);
@@ -276,15 +275,16 @@ plans::PlansGraph* ForbidIterativeSearch::create_forbid_graph_and_dump_multiple_
     forbid_graph->dump_plans(plan_manager, number_of_plans);
     utils::g_log << "Done dumping the plans" << endl;
 
-    //forbid_graph->dump_graph();
+    // forbid_graph->dump_graph();
     if (symmetry_group) {
         utils::g_log << "Extending partial order plans with symmetries... " << flush;
         // Going over the symmetries until fixed point is reached
         int num_symmetries = symmetry_group->get_num_generators();
         while (!enough_plans_found(forbid_graph->get_number_of_plans_dumped())) {
             bool change = false;
-            for (int i=0; i < num_symmetries; ++i) {
-                bool curr_change = forbid_graph->add_symmetry(symmetry_group, i);;
+            for (int i = 0; i < num_symmetries; ++i) {
+                bool curr_change = forbid_graph->add_symmetry(symmetry_group, i);
+                ;
                 change |= curr_change;
                 if (curr_change)
                     forbid_graph->dump_plans(plan_manager, number_of_plans);
@@ -297,7 +297,7 @@ plans::PlansGraph* ForbidIterativeSearch::create_forbid_graph_and_dump_multiple_
         utils::g_log << "Done extending partial order plans with symmetries" << endl;
     }
 
-    //utils::g_log << "=========================================================================" << endl;
+    // utils::g_log << "=========================================================================" << endl;
     if (dump_debug_info)
         forbid_graph->dump_dot_graph(plan_manager.get_num_previously_generated_plans(), false);
 
@@ -307,8 +307,8 @@ plans::PlansGraph* ForbidIterativeSearch::create_forbid_graph_and_dump_multiple_
     return forbid_graph;
 }
 
-void ForbidIterativeSearch::reformulate_and_dump_multiple_plans_graph(const char* filename, bool optimal, const Plan &current_plan) {
-    plans::PlansGraph* forbid_graph = create_forbid_graph_and_dump_multiple_plans(optimal, current_plan);
+void ForbidIterativeSearch::reformulate_and_dump_multiple_plans_graph(const char *filename, bool optimal, const Plan &current_plan) {
+    plans::PlansGraph *forbid_graph = create_forbid_graph_and_dump_multiple_plans(optimal, current_plan);
     if (!enough_plans_found(forbid_graph->get_number_of_plans_dumped())) {
         // Not all plans are found yet
         shared_ptr<AbstractTask> reformulated_task = make_shared<extra_tasks::GraphForbidReformulatedTask>(tasks::g_root_task, forbid_graph, change_operator_names);
@@ -324,15 +324,15 @@ bool ForbidIterativeSearch::enough_plans_found(int num_found_plans) const {
     return num_found_plans >= number_of_plans;
 }
 
-void ForbidIterativeSearch::reformulate_and_dump_multiset(const char* filename, vector<Plan> &current_plans) {
+void ForbidIterativeSearch::reformulate_and_dump_multiset(const char *filename, vector<Plan> &current_plans) {
     // Finding unique plans (as multisets)
     // Adding new, if found, to the end of the vector of current plans
     int num_operators = tasks::g_root_task->get_num_operators();
     utils::g_log << "Adding plans... " << endl;
     utils::HashSet<vector<int>> plans_sets;
-    
+
     vector<vector<int>> frontier;
-    for (const Plan& current_plan : current_plans) {
+    for (const Plan &current_plan : current_plans) {
         vector<int> found_plan;
         vector<int> set_a(num_operators, 0);
         for (OperatorID op : current_plan) {
@@ -352,16 +352,16 @@ void ForbidIterativeSearch::reformulate_and_dump_multiset(const char* filename, 
         utils::g_log << "Finding symmetric plans... " << endl;
         // Going over the symmetries until fixed point is reached
         // Keeping plans as action multisets for duplicate detection
-        //TODO: Think of a more memory efficient way of doing that. 
-        //TODO: Dump plans as we go 
+        // TODO: Think of a more memory efficient way of doing that.
+        // TODO: Dump plans as we go
         int num_symmetries = symmetry_group->get_num_generators();
 
         while (!enough_plans_found((int)current_plans.size())) {
             // Applying all symmetries to all plans in a frontier. The new ones become the new frontier.
             vector<vector<int>> new_frontier;
             bool change = false;
-            for (int i=0; i < num_symmetries; ++i) {
-                const OperatorPermutation& op_sym = symmetry_group->get_operator_permutation(i);
+            for (int i = 0; i < num_symmetries; ++i) {
+                const OperatorPermutation &op_sym = symmetry_group->get_operator_permutation(i);
 
                 for (vector<int> current_plan : frontier) {
                     // Permuting the plan, adding to found plans, and if new, to new frontier
@@ -375,10 +375,10 @@ void ForbidIterativeSearch::reformulate_and_dump_multiset(const char* filename, 
                     auto ret = plans_sets.insert(permuted_set);
                     if (ret.second) {
                         // Element inserted, adding to the new frontier
-                        //plans.insert(permuted_plan);
+                        // plans.insert(permuted_plan);
                         Plan curr;
                         get_plan_for_op_ids(permuted_plan, curr);
-                        current_plans.push_back(curr);                        
+                        current_plans.push_back(curr);
                         new_frontier.push_back(permuted_plan);
                         change = true;
                     } else {
@@ -394,11 +394,11 @@ void ForbidIterativeSearch::reformulate_and_dump_multiset(const char* filename, 
         utils::g_log << "done! [t=" << utils::g_timer << "]" << endl;
     }
 
-    //utils::g_log << "=========================================================================" << endl;
+    // utils::g_log << "=========================================================================" << endl;
 
     if (dumping_plans_files) {
-        utils::g_log << "Dumping " << current_plans.size() << " plans before reformulation " << endl;    
-        for (const Plan& plan : current_plans) {
+        utils::g_log << "Dumping " << current_plans.size() << " plans before reformulation " << endl;
+        for (const Plan &plan : current_plans) {
             plan_manager.save_plan(plan, task_proxy, true);
         }
         utils::g_log << "Done dumping plans before reformulation" << endl;
@@ -407,7 +407,7 @@ void ForbidIterativeSearch::reformulate_and_dump_multiset(const char* filename, 
         // Not all plans are found yet
         utils::HashSet<vector<int>> plans;
         vector<vector<int>> ordered_plans;
-        for (const Plan& current_plan : current_plans) {
+        for (const Plan &current_plan : current_plans) {
             vector<int> found_plan;
             for (OperatorID op : current_plan) {
                 int op_no = op.get_index();
@@ -441,25 +441,25 @@ static bool is_subset_eq(const std::unordered_set<int> &p1, const std::unordered
     return true;
 }
 
-static bool superset_duplicate(const std::vector<std::unordered_set<int>>& plans_sets, const std::unordered_set<int> &plan) {
+static bool superset_duplicate(const std::vector<std::unordered_set<int>> &plans_sets, const std::unordered_set<int> &plan) {
     for (auto p : plans_sets) {
-        if (is_subset_eq(p,plan) || is_subset_eq(plan, p))
+        if (is_subset_eq(p, plan) || is_subset_eq(plan, p))
             return true;
     }
     return false;
 }
 
-void ForbidIterativeSearch::reformulate_and_dump_superset(const char* filename, vector<Plan> &current_plans) {
+void ForbidIterativeSearch::reformulate_and_dump_superset(const char *filename, vector<Plan> &current_plans) {
     // Assuming unique plans (as super-sets)
     // Adding new, if found, to the end of the vector of current plans
     cout << "Adding plans... " << endl;
     std::vector<std::unordered_set<int>> plans_sets;
     vector<vector<int>> frontier;
-    for (const Plan& current_plan : current_plans) {
+    for (const Plan &current_plan : current_plans) {
         vector<int> found_plan;
         std::unordered_set<int> set_a;
         for (OperatorID op : current_plan) {
-            //cout << op->get_name() << endl;
+            // cout << op->get_name() << endl;
             int op_no = op.get_index();
             found_plan.push_back(op_no);
             set_a.insert(op_no);
@@ -475,16 +475,16 @@ void ForbidIterativeSearch::reformulate_and_dump_superset(const char* filename, 
         cout << "Finding symmetric plans... " << flush;
         // Going over the symmetries until fixed point is reached
         // Keeping plans as action sets, perform duplicate detection comparing subsets
-        //TODO: Think of a more memory efficient way of doing that.
-        //TODO: Dump plans as we go
+        // TODO: Think of a more memory efficient way of doing that.
+        // TODO: Dump plans as we go
         int num_symmetries = symmetry_group->get_num_generators();
 
         while (!enough_plans_found((int)current_plans.size())) {
             // Applying all symmetries to all plans in a frontier. The new ones become the new frontier.
             vector<vector<int>> new_frontier;
             bool change = false;
-            for (int i=0; i < num_symmetries; ++i) {
-                const OperatorPermutation& op_sym = symmetry_group->get_operator_permutation(i);
+            for (int i = 0; i < num_symmetries; ++i) {
+                const OperatorPermutation &op_sym = symmetry_group->get_operator_permutation(i);
 
                 for (vector<int> current_plan : frontier) {
                     // Permuting the plan, adding to found plans, and if new, to new frontier
@@ -499,7 +499,7 @@ void ForbidIterativeSearch::reformulate_and_dump_superset(const char* filename, 
                         plans_sets.push_back(permuted_set);
 
                         // Element inserted, adding to the new frontier
-                        //plans.insert(permuted_plan);
+                        // plans.insert(permuted_plan);
                         Plan p;
                         get_plan_for_op_ids(permuted_plan, p);
                         current_plans.push_back(p);
@@ -518,11 +518,11 @@ void ForbidIterativeSearch::reformulate_and_dump_superset(const char* filename, 
         cout << "done! [t=" << utils::g_timer << "]" << endl;
     }
 
-    //cout << "=========================================================================" << endl;
+    // cout << "=========================================================================" << endl;
 
     cout << "Dumping " << current_plans.size() << " plans before reformulation " << endl;
     if (dumping_plans_files) {
-        for (const Plan& plan : current_plans) {
+        for (const Plan &plan : current_plans) {
             plan_manager.save_plan(plan, task_proxy, true);
         }
     }
@@ -531,7 +531,7 @@ void ForbidIterativeSearch::reformulate_and_dump_superset(const char* filename, 
         // Not all plans are found yet
         utils::HashSet<vector<int>> plans_set;
         vector<vector<int>> ordered_plans;
-        for (const Plan& current_plan : current_plans) {
+        for (const Plan &current_plan : current_plans) {
             vector<int> found_plan;
             for (OperatorID op : current_plan) {
                 int op_no = op.get_index();
@@ -552,18 +552,14 @@ void ForbidIterativeSearch::reformulate_and_dump_superset(const char* filename, 
     }
 }
 
-
-void ForbidIterativeSearch::get_plan_for_op_ids(const vector<int>& plan_ids, Plan& plan) const {
+void ForbidIterativeSearch::get_plan_for_op_ids(const vector<int> &plan_ids, Plan &plan) const {
     for (int op_no : plan_ids) {
         plan.push_back(OperatorID(op_no));
     }
 }
 
-shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task(std::vector<vector<int>>& plans) const {
-    assert(reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET
-            || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_MULTISETS
-            || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERSETS
-            || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISETS);
+shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task(std::vector<vector<int>> &plans) const {
+    assert(reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_MULTISETS || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERSETS || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISETS || reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS);
 
     if (reformulate == TaskReformulationType::FORBID_SINGLE_PLAN_MULTISET) {
         return create_reformulated_task_multiset(plans);
@@ -571,37 +567,39 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task(std::ve
         return create_reformulated_task_supersets(plans);
     } else if (reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISETS) {
         return create_reformulated_task_super_multisets(plans);
+    } else if (reformulate == TaskReformulationType::FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS) {
+        return create_reformulated_task_super_multiset_groups(plans);
     }
-    
+
     return create_reformulated_task_multisets(plans);
 }
 
-shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_multiset(std::vector<vector<int>>& plans) const {
+shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_multiset(std::vector<vector<int>> &plans) const {
     // Creating a single multiset that is a union of all multisets
     std::unordered_map<int, int> multiset;
     for (vector<int> plan : plans) {
         // Building multiset for that plan
         std::unordered_map<int, int> plan_multiset;
         plan_to_multiset(plan, plan_multiset);
-//        bool is_not_subset = multiset_union(multiset, plan_multiset);
+        //        bool is_not_subset = multiset_union(multiset, plan_multiset);
         multiset_union(multiset, plan_multiset);
-        
-        //TODO: Check what's going on here - why are we dumping plans again
-/*
-        if (is_not_subset && dumping_plans_files) {
-            // Dumping the plan
-            Plan global_plan;
-            for (int op_no : plan) {
-                global_plan.push_back(&g_operators[op_no]);
-            }
-            save_plan(global_plan, true);
-        }
-*/        
+
+        // TODO: Check what's going on here - why are we dumping plans again
+        /*
+                if (is_not_subset && dumping_plans_files) {
+                    // Dumping the plan
+                    Plan global_plan;
+                    for (int op_no : plan) {
+                        global_plan.push_back(&g_operators[op_no]);
+                    }
+                    save_plan(global_plan, true);
+                }
+        */
     }
     return make_shared<extra_tasks::MultisetForbidReformulatedTask>(tasks::g_root_task, multiset, change_operator_names);
 }
 
-shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_multisets(std::vector<vector<int>>& plans) const {
+shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_multisets(std::vector<vector<int>> &plans) const {
     // Creating a multiset from each plan
     std::vector<std::unordered_map<int, int>> multisets;
     utils::g_log << "Forbidding " << plans.size() << " plans" << endl;
@@ -614,8 +612,7 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_multise
     return make_shared<extra_tasks::MultisetsForbidReformulatedTask>(tasks::g_root_task, multisets, change_operator_names);
 }
 
-
-shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_multisets(std::vector<vector<int>>& plans) const {
+shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_multisets(std::vector<vector<int>> &plans) const {
     // Creating a multiset from each plan
     std::vector<std::unordered_map<int, int>> multisets;
     cout << "Forbidding " << plans.size() << " plans" << endl;
@@ -628,7 +625,49 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
     return make_shared<extra_tasks::SuperMultisetsForbidReformulatedTask>(tasks::g_root_task, multisets, change_operator_names);
 }
 
-shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_supersets(std::vector<vector<int>>& plans) const {
+shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_multiset_groups(std::vector<vector<int>> &plans) const {
+    auto group_name_to_group_id = make_shared<unordered_map<string, int>>();
+
+    std::function<std::string(int)> get_group_name = [group_name_to_group_id](int group_no) {
+        for (auto &it : *group_name_to_group_id) {
+            if (it.second == group_no) return it.first;
+        }
+        return std::string("No matching group");
+    };
+
+    std::function<int(const std::shared_ptr<AbstractTask>, int)> f = [group_name_to_group_id](const std::shared_ptr<AbstractTask> task, int op_id) {
+
+        // ASS: map from operator name (string) to group name (string)
+        std::function<string(std::string)> op_name_to_group_name = [](std::string op_name) {
+            // ASS: This is prefix
+            return op_name.substr(0, op_name.find(' '));
+        };
+
+        auto op_name = task->get_operator_name(op_id, false);
+        auto group_name = op_name_to_group_name(op_name);
+        int group_id;
+        auto it = group_name_to_group_id->find(group_name);
+        if (it != group_name_to_group_id->end()) {
+            group_id = (*group_name_to_group_id)[group_name];
+        } else {
+            group_id = group_name_to_group_id->size();
+            (*group_name_to_group_id)[group_name] = group_id;
+        }
+        return group_id;
+    };
+
+    std::vector<std::unordered_map<int, int>> multisets;
+    cout << "Forbidding " << plans.size() << " plans" << endl;
+    for (vector<int> plan : plans) {
+        // Building multiset for that plan
+        std::unordered_map<int, int> plan_multiset;
+        plan_to_group_multiset(plan, tasks::g_root_task, f, plan_multiset);
+        multisets.push_back(plan_multiset);
+    }
+    return make_shared<extra_tasks::SuperMultisetGroupsForbidReformulatedTask>(tasks::g_root_task, f, get_group_name, multisets, change_operator_names);
+}
+
+shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_supersets(std::vector<vector<int>> &plans) const {
     // Creating a multiset from each plan
     std::vector<std::unordered_set<int>> sets;
     cout << "Forbidding " << plans.size() << " plans" << endl;
@@ -641,8 +680,7 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_superse
     return make_shared<extra_tasks::SupersetsForbidReformulatedTask>(tasks::g_root_task, sets);
 }
 
-
-void ForbidIterativeSearch::plan_to_multiset(const std::vector<int>& plan, std::unordered_map<int, int>& plan_multiset) const {
+void ForbidIterativeSearch::plan_to_multiset(const std::vector<int> &plan, std::unordered_map<int, int> &plan_multiset) const {
     for (int op_no : plan) {
         auto it = plan_multiset.find(op_no);
         if (it == plan_multiset.end()) {
@@ -653,8 +691,20 @@ void ForbidIterativeSearch::plan_to_multiset(const std::vector<int>& plan, std::
     }
 }
 
-bool ForbidIterativeSearch::multiset_union(std::unordered_map<int, int>& multiset, const std::unordered_map<int, int>& from_multiset) const {
-    // Modifies the multiset by making a union with the second multiset, returns true iff not proper subset 
+void ForbidIterativeSearch::plan_to_group_multiset(const std::vector<int> &plan, std::shared_ptr<AbstractTask> task, const std::function<int(const std::shared_ptr<AbstractTask>, int)> &f, std::unordered_map<int, int> &plan_multiset) const {
+    for (int op_no : plan) {
+        auto group_no = f(task, op_no);
+        auto it = plan_multiset.find(group_no);
+        if (it == plan_multiset.end()) {
+            plan_multiset[group_no] = 1;
+        } else {
+            plan_multiset[group_no]++;
+        }
+    }
+}
+
+bool ForbidIterativeSearch::multiset_union(std::unordered_map<int, int> &multiset, const std::unordered_map<int, int> &from_multiset) const {
+    // Modifies the multiset by making a union with the second multiset, returns true iff not proper subset
     bool is_proper_subset = true;
     // Making a union with the main multiset
     for (std::pair<int, int> e : from_multiset) {
@@ -674,7 +724,7 @@ bool ForbidIterativeSearch::multiset_union(std::unordered_map<int, int>& multise
     return !is_proper_subset;
 }
 
-void ForbidIterativeSearch::reformulate_and_dump_read_plans_and_dump_graph(const char* filename, std::vector<Plan> &current_plans) const {
+void ForbidIterativeSearch::reformulate_and_dump_read_plans_and_dump_graph(const char *filename, std::vector<Plan> &current_plans) const {
     ofstream os(filename);
     assert(number_of_plans >= 0);
 
@@ -693,38 +743,25 @@ void ForbidIterativeSearch::reformulate_and_dump_read_plans_and_dump_graph(const
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 void ForbidIterativeSearch::add_forbid_plan_reformulation_option(OptionParser &parser) {
 
     parser.add_option<shared_ptr<Group>>(
         "extend_plans_with_symmetry",
         "symmetries object to extend plans with",
-        OptionParser::NONE);
+        OptionParser::NONE
+    );
 
-    parser.add_option<int>("number_of_plans_to_read",
-        "Getting multiple plans as an input, reformulate",
-        "0");
+    parser.add_option<int>("number_of_plans_to_read", "Getting multiple plans as an input, reformulate", "0");
 
-    parser.add_option<bool>("dump_states_json",
-        "Getting multiple plans as an input, dumping into files sequences of states instead",
-        "false");
+    parser.add_option<bool>("dump_states_json", "Getting multiple plans as an input, dumping into files sequences of states instead", "false");
 
-    parser.add_option<bool>("dump_causal_links_json",
-        "Dump the partial order between actions in a plan, defined by causal links to preconditions from the latest achiever",
-        "false");
+    parser.add_option<bool>("dump_causal_links_json", "Dump the partial order between actions in a plan, defined by causal links to preconditions from the latest achiever", "false");
 
+    parser.add_option<string>("json_file_to_dump", "A path to the json file to use for dumping", OptionParser::NONE);
 
-    parser.add_option<string>("json_file_to_dump",
-        "A path to the json file to use for dumping",
-        OptionParser::NONE);
+    parser.add_option<string>("external_plan_file", "Getting a single plan file path", OptionParser::NONE);
 
-    parser.add_option<string>("external_plan_file",
-        "Getting a single plan file path",
-        OptionParser::NONE);
-
-    parser.add_option<string>("external_plans_path",
-        "Getting a path to the folder with plans",
-        OptionParser::NONE);
+    parser.add_option<string>("external_plans_path", "Getting a path to the folder with plans", OptionParser::NONE);
 
     vector<string> reduce;
     reduce.push_back("NONE");
@@ -736,7 +773,8 @@ void ForbidIterativeSearch::add_forbid_plan_reformulation_option(OptionParser &p
         "reduce_plan_orders",
         reduce,
         "Reducing orders in a found plan",
-        "NONE");
+        "NONE"
+    );
 
     vector<string> reformulate;
     reformulate.push_back("NONE");
@@ -747,24 +785,21 @@ void ForbidIterativeSearch::add_forbid_plan_reformulation_option(OptionParser &p
     reformulate.push_back("FORBID_MULTIPLE_PLAN_MULTISETS");
     reformulate.push_back("FORBID_MULTIPLE_PLAN_SUPERSETS");
     reformulate.push_back("FORBID_MULTIPLE_PLAN_SUPERMULTISETS");
+    reformulate.push_back("FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS");
     parser.add_enum_option<TaskReformulationType>(
         "reformulate",
         reformulate,
         "Reformulate the input planning task to forbid plans",
-        "NONE");
+        "NONE"
+    );
 
-    parser.add_option<bool>("change_operator_names",
-        "changing the names to include operator types",
-        "false");
+    parser.add_option<bool>("change_operator_names", "changing the names to include operator types", "false");
     parser.add_option<int>("number_of_plans", "Number of plans", "-1");
     parser.add_option<int>("number_of_edges_until_greedy_clean", "Number of edges added by the naive DFS algorithm until a greedy cleaning is performed", "-1");
     parser.add_option<bool>("dump", "Dumping debug info", "false");
     parser.add_option<bool>("read_plans_and_dump_graph", "reading the plans and creating a graph, and then dumping it", "false");
     parser.add_option<bool>("dumping_plans_files", "Dumping the plans to files", "true");
-
 }
-
-
 
 static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     parser.document_synopsis("Forbid iterative search", "");
@@ -772,7 +807,6 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     ForbidIterativeSearch::add_forbid_plan_reformulation_option(parser);
     Options opts = parser.parse();
-
 
     shared_ptr<ForbidIterativeSearch> engine;
 
@@ -784,5 +818,3 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
 }
 
 static Plugin<SearchEngine> _plugin("forbid_iterative", _parse);
-
-

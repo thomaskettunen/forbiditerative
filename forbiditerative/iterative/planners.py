@@ -320,6 +320,26 @@ class TopKViaUnorderedTopQualityPlanner(Planner):
         return self._enough_plans_found(plan_manager, up_to_best_known_bound=True)
 
 
+class SubMultisetTopKPlanner(TopKPlanner):
+    def get_reformulation_callstring(self, task_manager, plan_manager):
+        return self._get_default_reformulation_callstring(planner_call.TopkSuperMultisetReformulationPlannerCall(), task_manager, plan_manager)
+    
+    def cleanup_plans(self, plan_manager):
+        logging.info("Cleaning up plans %s" % self._elapsed_time)
+        plan_manager.remove_aux_actions()
+        logging.info("DONE Cleaning up plans %s" % self._elapsed_time)
+
+
+class SuperMultisetGroupsTopKPlanner(TopKPlanner):
+    def get_reformulation_callstring(self, task_manager, plan_manager):
+        return self._get_default_reformulation_callstring(planner_call.TopkSuperMultisetGroupsReformulationPlannerCall(), task_manager, plan_manager)
+    
+    def cleanup_plans(self, plan_manager):
+        logging.info("Cleaning up plans %s" % self._elapsed_time)
+        plan_manager.remove_aux_actions()
+        logging.info("DONE Cleaning up plans %s" % self._elapsed_time)
+
+
 ###################################################################################################
 #####  Top Quality planners
 
@@ -393,6 +413,7 @@ class UnorderedTopQualityPlanner(Planner):
         if self._args.number_of_plans and self._enough_plans_found_number(plan_manager, up_to_best_known_bound=True):
             return True
         return self._enough_plans_found_quality(plan_manager)
+
 
 class ExtendedUnorderedTopQualityPlanner(UnorderedTopQualityPlanner):
     """
