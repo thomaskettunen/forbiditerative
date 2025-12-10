@@ -626,30 +626,32 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
 }
 
 shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_multiset_groups(std::vector<vector<int>> &plans) const {
-    auto very_good_solution = make_shared<unordered_map<string, int>>();
+    auto group_name_to_group_id = make_shared<unordered_map<string, int>>();
 
-    std::function<std::string(int)> get_group_name = [very_good_solution](int group_no) {
-        for (auto &it : *very_good_solution) {
+    std::function<std::string(int)> get_group_name = [group_name_to_group_id](int group_no) {
+        for (auto &it : *group_name_to_group_id) {
             if (it.second == group_no) return it.first;
         }
         return std::string("No matching group");
     };
 
-    std::function<int(const std::shared_ptr<AbstractTask>, int)> f = [very_good_solution](const std::shared_ptr<AbstractTask> task, int op_id) {
+    std::function<int(const std::shared_ptr<AbstractTask>, int)> f = [group_name_to_group_id](const std::shared_ptr<AbstractTask> task, int op_id) {
+
         // ASS: map from operator name (string) to group name (string)
-        std::function<string(string)> actual_map = [](std::string op_name) {
+        std::function<string(std::string)> op_name_to_group_name = [](std::string op_name) {
+            // ASS: This is prefix
             return op_name.substr(0, op_name.find(' '));
         };
 
         auto op_name = task->get_operator_name(op_id, false);
-        auto group_name = actual_map(op_name);
+        auto group_name = op_name_to_group_name(op_name);
         int group_id;
-        auto it = very_good_solution->find(group_name);
-        if (it != very_good_solution->end()) {
-            group_id = (*very_good_solution)[group_name];
+        auto it = group_name_to_group_id->find(group_name);
+        if (it != group_name_to_group_id->end()) {
+            group_id = (*group_name_to_group_id)[group_name];
         } else {
-            group_id = very_good_solution->size();
-            (*very_good_solution)[group_name] = group_id;
+            group_id = group_name_to_group_id->size();
+            (*group_name_to_group_id)[group_name] = group_id;
         }
         return group_id;
     };
