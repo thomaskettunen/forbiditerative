@@ -78,15 +78,15 @@ namespace extra_tasks {
         initial_state_values.insert(initial_state_values.end(), forbidding_groups_to_var.size(), 0); //. Extra var per op, tracking its application
     }
 
-    int SuperMultisetGroupsForbidReformulatedTask::get_number_appearances(int op_no) const {
-        auto id = max_count.find(op_no);
+    int SuperMultisetGroupsForbidReformulatedTask::get_number_appearances(int group_no) const {
+        auto id = max_count.find(group_no);
         if (id == max_count.end())
             return 0;
         return id->second;
     }
 
-    bool SuperMultisetGroupsForbidReformulatedTask::is_operator_on_plans(int op_no) const {
-        return forbidding_groups_to_var.find(op_no) != forbidding_groups_to_var.end();
+    bool SuperMultisetGroupsForbidReformulatedTask::is_group_in_plans(int group_no) const {
+        return forbidding_groups_to_var.find(group_no) != forbidding_groups_to_var.end();
     }
 
     const SuperMultisetGroupsForbidReformulatedTask::OperatorIndices &SuperMultisetGroupsForbidReformulatedTask::get_parent_op_index(int op_index) const {
@@ -107,8 +107,8 @@ namespace extra_tasks {
         return parent->get_num_variables();
     }
 
-    int SuperMultisetGroupsForbidReformulatedTask::get_group_tracking_var_index(int op_no) const {
-        auto it = forbidding_groups_to_var.find(f(parent, op_no));
+    int SuperMultisetGroupsForbidReformulatedTask::get_group_tracking_var_index(int group_no) const {
+        auto it = forbidding_groups_to_var.find(group_no);
         assert(it != forbidding_groups_to_var.end());
         return parent->get_num_variables() + 1 + it->second;
     }
@@ -228,9 +228,10 @@ namespace extra_tasks {
         if (index < (int)extra_op_ou_index_to_parent_op_index.size()) {
             const OperatorIndices &ids = get_parent_op_index(index);
 
-            int is_in_multiset = is_operator_on_plans(ids.parent_op_no) ? 1 : 0;
+            int is_in_multiset = is_group_in_plans(f(parent, ids.parent_op_no)) ? 1 : 0;
             return parent->get_num_operator_preconditions(ids.parent_op_no, is_axiom) + 1 + is_in_multiset;
         }
+
         return parent->get_num_goals() + 2;
     }
 
@@ -256,7 +257,7 @@ namespace extra_tasks {
             }
             // op tracking pre
             // ASS: Pre(o_i) inlcudes v_o = i
-            return FactPair(get_group_tracking_var_index(ids.parent_op_no), ids.running_id);
+            return FactPair(get_group_tracking_var_index(f(parent, ids.parent_op_no)), ids.running_id);
         }
 
         // Extra op
@@ -272,7 +273,9 @@ namespace extra_tasks {
         // Then comes the op tracking var
         // ASS: Pre(o_i,j) inlcudes v_o = i
         if (fact_index == parent->get_num_goals()) {
-            return FactPair(get_group_tracking_var_index(ids.parent_op_no), ids.running_id);
+            // ASS: parent_op_no is actually group_no for o_i_j operators
+            int group_no = ids.parent_op_no;
+            return FactPair(get_group_tracking_var_index(group_no), ids.running_id);
         }
 
         // Then comes the set tracking var
@@ -287,7 +290,7 @@ namespace extra_tasks {
         if (op_index < (int)extra_op_ou_index_to_parent_op_index.size()) {
             const OperatorIndices &ids = get_parent_op_index(op_index);
 
-            int is_in_set = ids.running_id < get_number_appearances(ids.parent_op_no) ? 1 : 0;
+            int is_in_set = ids.running_id < get_number_appearances(f(parent, ids.parent_op_no)) ? 1 : 0;
             return parent->get_num_operator_effects(ids.parent_op_no, is_axiom) + is_in_set;
         }
         // Extra op effect
@@ -329,8 +332,8 @@ namespace extra_tasks {
                 return parent->get_operator_effect(ids.parent_op_no, eff_index, is_axiom);
             }
             // Possible extra effect
-            // ASS: is o_i, increment counter
-            return FactPair(get_group_tracking_var_index(ids.parent_op_no), ids.running_id + 1);
+            // ASS: is o_i, v_o = i + 1
+            return FactPair(get_group_tracking_var_index(f(parent, ids.parent_op_no)), ids.running_id + 1);
         }
         // Extra op
         // Getting the parent op_id and the set id

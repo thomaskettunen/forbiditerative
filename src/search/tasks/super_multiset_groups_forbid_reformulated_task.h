@@ -44,14 +44,14 @@ namespace extra_tasks {
         std::vector<int> initial_state_values;
         std::vector<int> var_no_to_group_no;
 
-        int get_number_appearances(int op_no) const;
-        bool is_operator_on_plans(int op_no) const;
+        int get_number_appearances(int group_no) const;
+        bool is_group_in_plans(int group_no) const;
 
         const OperatorIndices &get_parent_op_index(int index) const;
         int get_grp_for_var_index(int var_index) const;
 
         int get_set_tracking_var_index() const;
-        int get_group_tracking_var_index(int op_no) const;
+        int get_group_tracking_var_index(int group_no) const;
 
       public:
         SuperMultisetGroupsForbidReformulatedTask(
