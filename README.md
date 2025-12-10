@@ -36,6 +36,11 @@ For building the code please use
 ```
 
 # Running
+## FI-group-super-multiset-top-k
+```
+# ./plan_supermultisetgroups_topk.sh <domain> <problem> <number-of-plans>
+./plan_supermultisetgroups_topk.sh examples/p9/domain.pddl examples/p9/problem.pddl 5
+```
 ## FI-top-k
 ```
 # ./plan_topk.sh <domain> <problem> <number-of-plans>
