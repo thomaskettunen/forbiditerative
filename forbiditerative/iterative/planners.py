@@ -323,11 +323,21 @@ class TopKViaUnorderedTopQualityPlanner(Planner):
 class SubMultisetTopKPlanner(TopKPlanner):
     def get_reformulation_callstring(self, task_manager, plan_manager):
         return self._get_default_reformulation_callstring(planner_call.TopkSuperMultisetReformulationPlannerCall(), task_manager, plan_manager)
+    
+    def cleanup_plans(self, plan_manager):
+        logging.info("Cleaning up plans %s" % self._elapsed_time)
+        plan_manager.remove_aux_actions()
+        logging.info("DONE Cleaning up plans %s" % self._elapsed_time)
 
 
 class SuperMultisetGroupsTopKPlanner(TopKPlanner):
     def get_reformulation_callstring(self, task_manager, plan_manager):
         return self._get_default_reformulation_callstring(planner_call.TopkSuperMultisetGroupsReformulationPlannerCall(), task_manager, plan_manager)
+    
+    def cleanup_plans(self, plan_manager):
+        logging.info("Cleaning up plans %s" % self._elapsed_time)
+        plan_manager.remove_aux_actions()
+        logging.info("DONE Cleaning up plans %s" % self._elapsed_time)
 
 
 ###################################################################################################
