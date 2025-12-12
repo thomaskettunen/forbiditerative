@@ -15,7 +15,8 @@ if [ "$#" -eq 4 ]; then
     QBOUND="--quality-bound $4"
 fi
 
-SOURCE="$( dirname "${BASH_SOURCE[0]}" )"
-export PYTHONPATH=$PWD && $SOURCE/forbiditerative/plan.py --planner supermultisetgroups_topk --domain $1 --problem $2 --number-of-plans $3 $QBOUND --use-local-folder --clean-local-folder --suppress-planners-output # --reordering "NONE"
+
+SOURCE="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"
+export PYTHONPATH="$SOURCE" && "$SOURCE/forbiditerative/plan.py" --planner supermultisetgroups_topk --domain $1 --problem $2 --number-of-plans $3 $QBOUND --use-local-folder --clean-local-folder # --suppress-planners-output # --reordering "NONE"
 # export PYTHONPATH=$PWD && $SOURCE/forbiditerative/plan.py --planner supermultisetgroups_topk --domain $1 --problem $2 --number-of-plans $3 $QBOUND --symmetries --use-local-folder --keep-intermediate-tasks #--clean-local-folder --suppress-planners-output
 
