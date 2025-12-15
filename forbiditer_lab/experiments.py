@@ -25,10 +25,15 @@ class BaseReport(AbsoluteReport):
         "node",
     ]
 
+junk = [".git", ".github", ".gitignore", "README.md", "suites.py", "tests.py", "tox.ini"]
+benchmarks = os.listdir("../../benchmarks")
+for j in junk:
+    if j in benchmarks:
+        benchmarks.remove(j)
 
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 ENV = LocalEnvironment(processes=2)
-SUITE = ["gripper:prob01.pddl"]
+SUITE = benchmarks
 ATTRIBUTES = [
     # "error",
     # "plan",
