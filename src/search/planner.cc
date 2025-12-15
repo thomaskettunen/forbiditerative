@@ -15,6 +15,7 @@ using namespace std;
 using utils::ExitCode;
 
 int main(int argc, const char **argv) {
+    std::cout << "DOWNWARDS Compiled on: " << __DATE__ << " " << __TIME__ << std::endl;
     utils::register_event_handlers();
 
     if (argc < 2) {
