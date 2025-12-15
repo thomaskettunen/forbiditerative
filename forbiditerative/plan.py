@@ -65,15 +65,16 @@ def find_plans(args):
         make_call(command, planner.get_remaining_time(), local_folder, enable_output=enable_planners_output)
     except SubprocessError as err:
         logging.info("External planner did not produce a plan")
-        if planner.check_unsolvable(err.output.decode()):
+        out_str = err.output.decode()
+        if planner.check_unsolvable(out_str):
             logging.info("External planner proved that there are no more plans")
-
         if enable_planners_output:
-            print(err.output)
+            print(f'Planner Output (Error): {out_str}')
         planner.report_iteration_step(plan_manager, success=False)
         planner.finalize(plan_manager)
         planner.cleanup(plan_manager)
         planner.report_done()
+
         # Planner failure might be a normal behavior, when there are no plans
         return
         # raise
@@ -158,10 +159,11 @@ def find_plans(args):
             make_call(command, planner.get_remaining_time(), local_folder, enable_output=enable_planners_output)
         except SubprocessError as err:
             logging.info("External planner did not produce a plan")
-            if planner.check_unsolvable(err.output.decode()):
+            out_str = err.output.decode()
+            if planner.check_unsolvable(out_str):
                 logging.info("External planner proved that there are no more plans")
             if enable_planners_output:
-                print(err.output)
+                print(f'Planner Output (Error): {out_str}')
             planner.report_iteration_step(plan_manager, success=False)
             planner.finalize(plan_manager)
             planner.cleanup(plan_manager)
@@ -320,11 +322,23 @@ def set_default_build_path():
     exit(1)
 
 if __name__ == "__main__":
+    log_level_parser = argparse.ArgumentParser(add_help=False)
+    log_level_parser.add_argument(
+        "--log-level", choices=["debug", "info", "warning"],
+        default="info",
+        help="set log level (most verbose: debug; least verbose: warning; default: %(default)s)",
+    )
+    (log_level_args, _) = log_level_parser.parse_known_args()
+    logging.basicConfig(
+        level=getattr(logging, log_level_args.log_level.upper()),
+        format="%(pathname)s:%(lineno)d %(levelname)-8s %(message)s",
+        stream=sys.stdout,
+        force=True,
+    )
+
     set_default_build_path()
-    parser = argparse.ArgumentParser(
-        add_help=False)
-    lim = parser.add_argument_group(
-        title="time and memory limits")
+    parser = argparse.ArgumentParser(add_help=False)
+    lim = parser.add_argument_group(title="time and memory limits")
     lim.add_argument("--overall-time-limit")
     lim.add_argument("--overall-memory-limit")
 
@@ -357,12 +371,16 @@ if __name__ == "__main__":
 
     parser.add_argument("--suppress-planners-output", help="Suppress the output of the individual planners", action="store_true")
     parser.add_argument("--case-sensitive", action="store_true", help="treat the input PDDL as case sensitive")
-     
+    
+    parser.add_argument(
+        "--log-level", choices=["debug", "info", "warning"],
+        default="info",
+        help="set log level (most verbose: debug; least verbose: warning; default: %(default)s)",
+    )
+
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO, #level=logging.DEBUG,
-                        format="%(levelname)-8s %(message)s",
-                        stream=sys.stdout)
+    logging.debug("processed args: %s" % args)
 
     validate_input(args)
 

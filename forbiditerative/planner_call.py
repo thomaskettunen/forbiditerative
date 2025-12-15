@@ -25,7 +25,7 @@ def make_call(command, time_limit, local_folder, enable_output=False):
     po = subprocess.check_output(command, timeout=time_limit, cwd=local_folder)
 
     if enable_output:
-        print(po.decode())
+        print(f'Planner Output (Sucess): {po.decode()}')
 
 
 class PlannerCall(object):
