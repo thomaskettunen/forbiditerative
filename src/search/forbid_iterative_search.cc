@@ -626,7 +626,11 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
 }
 
 shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_multiset_groups(std::vector<vector<int>> &plans) const {
+
+    // ASS: BEGIN GROUPING STUFF
     auto group_name_to_group_id = make_shared<unordered_map<string, int>>();
+
+    printf("Operator Grouping function: prefix_1\n");
 
     std::function<std::string(int)> get_group_name = [group_name_to_group_id](int group_no) {
         for (auto &it : *group_name_to_group_id) {
@@ -636,7 +640,6 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
     };
 
     std::function<int(const std::shared_ptr<AbstractTask>, int)> f = [group_name_to_group_id](const std::shared_ptr<AbstractTask> task, int op_id) {
-
         // ASS: map from operator name (string) to group name (string)
         std::function<string(std::string)> op_name_to_group_name = [](std::string op_name) {
             // ASS: This is prefix
@@ -655,6 +658,7 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
         }
         return group_id;
     };
+    // ASS: END GROUPING STUFF
 
     std::vector<std::unordered_map<int, int>> multisets;
     cout << "Forbidding " << plans.size() << " plans" << endl;
