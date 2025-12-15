@@ -13,6 +13,17 @@ macro(fast_downward_set_compiler_flags)
             message(FATAL_ERROR "${CMAKE_CXX_COMPILER} does not support C++11, please use a different compiler")
         endif()
 
+        # Add git version as preprocessor define
+        # https://stackoverflow.com/a/21028226
+        # Assumes git in path
+        execute_process(COMMAND
+        git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE GIT_SHA1
+        ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+        string(REPLACE "-" "_" GIT_SHA1_ESCAPED "${GIT_SHA1}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGIT_SHA1=\"\"${GIT_SHA1_ESCAPED}\"\"")
+
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wnon-virtual-dtor")
 

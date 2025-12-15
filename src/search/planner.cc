@@ -11,11 +11,16 @@
 
 #include <iostream>
 
+#define _QUOTE(x) #x
+#define QUOTE(x) _QUOTE(x)
+
 using namespace std;
 using utils::ExitCode;
 
 int main(int argc, const char **argv) {
     std::cout << "DOWNWARDS Compiled on: " << __DATE__ << " " << __TIME__ << std::endl;
+    std::cout << "DOWNWARDS GIT SHA: " << QUOTE(GIT_SHA1) << std::endl;
+
     utils::register_event_handlers();
 
     if (argc < 2) {
