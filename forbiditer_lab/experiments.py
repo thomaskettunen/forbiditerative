@@ -25,7 +25,7 @@ class BaseReport(AbsoluteReport):
         "node",
     ]
 
-junk = [".git", ".github", ".gitignore", "README.md", "suites.py", "tests.py", "tox.ini"]
+junk = [".git", ".github", ".gitignore", "export.py", "README.md", "suites.py", "tests.py", "tox.ini"]
 benchmarks = os.listdir("../../benchmarks")
 for j in junk:
     if j in benchmarks:
