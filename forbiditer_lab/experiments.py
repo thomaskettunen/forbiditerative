@@ -35,12 +35,12 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 ENV = LocalEnvironment(processes=2)
 SUITE = benchmarks
 ATTRIBUTES = [
-    # "error",
-    # "plan",
-    # "times",
-    # Attribute("coverage", absolute=True, min_wins=False, scale="linear"),
-    # Attribute("evaluations", function=geometric_mean),
-    # Attribute("trivially_unsolvable", min_wins=False),
+    "error",
+    Attribute("exit code"),
+    Attribute("total time", min_wins=True),
+    Attribute("coverage", min_wins=False, scale="linear"),
+    Attribute("plans found", min_wins=False),
+    Attribute("last plan time", min_wins=True, function=geometric_mean),
 ]
 TIME_LIMIT = 1800
 MEMORY_LIMIT = 2048
@@ -75,6 +75,7 @@ for task in suites.build_suite(BENCHMARKS_DIR, SUITE):
     # 'time_limit', 'memory_limit'.
     run.set_property("time_limit", TIME_LIMIT)
     run.set_property("memory_limit", MEMORY_LIMIT)
+    run.set_property("k", f'{os.environ["K"]}')
     # Every run has to have a unique id in the form of a list.
     # The algorithm name is only really needed when there are
     # multiple algorithms.
