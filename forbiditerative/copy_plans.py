@@ -54,12 +54,9 @@ def os_mv(from_file, to_file, local_folder):
 
 
 def keep_found_plans(optimal_plans, non_optimal_plans, intermediate_plans, local_folder):
-    if not os.path.exists(get_found_plans_dir(local_folder)):
-        os.makedirs(get_found_plans_dir(local_folder))
-    if not os.path.exists(get_found_optimal_plans_dir(local_folder)):
-        os.makedirs(get_found_optimal_plans_dir(local_folder))
-    if not os.path.exists(get_found_non_optimal_plans_dir(local_folder)):
-        os.makedirs(get_found_non_optimal_plans_dir(local_folder))
+    os.makedirs(get_found_plans_dir(local_folder, exist_ok=True))
+    os.makedirs(get_found_optimal_plans_dir(local_folder, exist_ok=True))
+    os.makedirs(get_found_non_optimal_plans_dir(local_folder, exist_ok=True))
 
     if optimal_plans:
         for name in optimal_plans:
@@ -80,16 +77,13 @@ def get_number_of_plans(local_folder):
 def create_local_folder(create_found_plans_dir=True):
     import uuid
     local_path = os.path.join("/", "tmp" , "planner_runs")
-    if not os.path.exists(local_path):
-        os.makedirs(local_path)
+    os.makedirs(local_path, exist_ok=True)
     local_folder_name = os.path.join(local_path , str(uuid.uuid4()).lower())
-    if not os.path.exists(local_folder_name):
-        os.makedirs(local_folder_name)
+    os.makedirs(local_folder_name, exist_ok=True)
 
     if create_found_plans_dir:
         input_plans_folder_name = os.path.join(local_folder_name, get_found_plans_dir())
-        if not os.path.exists(input_plans_folder_name):
-            os.makedirs(input_plans_folder_name)
+        os.makedirs(input_plans_folder_name, exist_ok=True)
         return input_plans_folder_name
     return local_folder_name
 
@@ -116,13 +110,11 @@ def copy_found_plans_back(local_folder):
     # Assuming current work directory
     logging.info("copying back to current work directory") 
     dest_plans_folder = get_dest_plans_folder()
-    if not os.path.exists(dest_plans_folder):
-        os.makedirs(dest_plans_folder)
+    os.makedirs(dest_plans_folder, exist_ok=True)
     dest_opt = get_dest_optimal_plans_folder()
     dest_non_opt = get_dest_non_optimal_plans_folder()
     for f in [dest_opt, dest_non_opt]:
-        if not os.path.exists(f):
-            os.makedirs(f)
+        os.makedirs(f, exist_ok=True)
 
     for plan_file_path in glob.glob(os.path.join(local_folder, get_found_plans_dir(), 'sas_plan*')):
         #logging.info("copying %s to %s" % (plan_file_path, dest_plans_folder))
@@ -148,13 +140,11 @@ def move_found_plans_back(local_folder):
     # Assuming current work directory
 
     dest_plans_folder = os.path.join(os.getcwd(), get_found_plans_dir())
-    if not os.path.exists(dest_plans_folder):
-        os.makedirs(dest_plans_folder)
+    os.makedirs(dest_plans_folder, exist_ok=True)
     dest_opt = os.path.join(os.getcwd(), get_found_optimal_plans_dir())
     dest_non_opt = os.path.join(os.getcwd(), get_found_non_optimal_plans_dir())
     for f in [dest_opt, dest_non_opt]:
-        if not os.path.exists(f):
-            os.makedirs(f)
+        os.makedirs(f, exist_ok=True)
 
     for plan_file_path in glob.glob(os.path.join(local_folder, get_found_plans_dir(), 'sas_plan*')):
         file_name = os.path.basename(plan_file_path)
