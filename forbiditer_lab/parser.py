@@ -48,9 +48,13 @@ def last_plan_time(content, props):
         #. Last time it says "Iteration step \d+ is done, found \d+ plans" is the last time it finds plans
         matches = re.findall(r"Iteration step \d+ is done, found \d+ plans, time \[(\d+\.\d+)s CPU, \d+\.\d+s wall-clock\]", content)
         if len(matches) > 0:
-            props["last plan time"] = float(matches[-1])
+            props["last plan time_mean"] = float(matches[-1])
+            props["last plan time_min"] = float(matches[-1])
+            props["last plan time_max"] = float(matches[-1])
         else:
-            props["last plan time"] = None
+            props["last plan time_mean"] = None
+            props["last plan time_min"] = None
+            props["last plan time_max"] = None
 
 
 def to_str(content, props):
