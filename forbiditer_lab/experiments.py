@@ -129,7 +129,7 @@ for task in suites.build_suite(BENCHMARKS_DIR, SUITE):
     # We could also use exp.add_resource().
     run.add_command(
         "run-planner",
-        [os.environ["PLANNER"], "{domain}", "{problem}", f'{os.environ["K"]}'],
+        [os.environ["PLANNER"], "{domain}", "{problem}", f'{os.environ["K"]}', '--overall-time-limit', f'{TIME_LIMIT}'],
         time_limit=TIME_LIMIT,
         memory_limit=MEMORY_LIMIT,
     )
