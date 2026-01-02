@@ -15,7 +15,13 @@ def error(content, props):
 def exit_code(content, props):
     if not props["error"]:
         matches = re.findall(r"search exit code: (\d+)", content)
-        if len(matches) > 0: #. if trannslate sttep aborts, we don't even get one search exit code
+
+        external_planners_started = len(re.findall(r"Running search", content))
+        external_planners_done = len(re.findall(r"search exit code: (\d+)", content))
+
+        if(external_planners_started > external_planners_done): # If more searches were started than done assume timeout
+            props['exit code'] = ExitCode.OUT_OF_TIME.value
+        elif len(matches) > 0: #. if trannslate sttep aborts, we don't even get one search exit code
             props["exit code"] = int(matches[-1])
         else:
             props["exit code"] = ExitCode.OTHER_ERROR.value #. Fake exit code to indicate this branch
@@ -23,7 +29,10 @@ def exit_code(content, props):
 
 def total_time(content, props):
     if not props["error"]:
-        props["total time"] = float(re.search(r"All iterations are done \[(\d+\.\d+)s CPU, \d+\.\d+s wall-clock\]", content).group(1))
+        try:
+            props["total time"] = float(re.search(r"All iterations are done \[\d+\.\d+s CPU, (\d+\.\d+)s wall-clock\]", content).group(1))
+        except:
+           props["total time"] = 600
 
 def coverage(content, props):
     if not props["error"]:
@@ -46,7 +55,7 @@ def plans_found(content, props):
 def last_plan_time(content, props):
     if not props["error"]:
         #. Last time it says "Iteration step \d+ is done, found \d+ plans" is the last time it finds plans
-        matches = re.findall(r"Iteration step \d+ is done, found \d+ plans, time \[(\d+\.\d+)s CPU, \d+\.\d+s wall-clock\]", content)
+        matches = re.findall(r"Iteration step \d+ is done, found \d+ plans, time \[\d+\.\d+s CPU, (\d+\.\d+)s wall-clock\]", content)
         if len(matches) > 0:
             props["last plan time_mean"] = float(matches[-1])
             props["last plan time_min"] = float(matches[-1])
