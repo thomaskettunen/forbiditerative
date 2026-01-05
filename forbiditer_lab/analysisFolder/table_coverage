@@ -1,0 +1,121 @@
+\hline 
+their_run & our_run_prefix1 & our_run_prefix2 \\
+\hline 
+airport & 18 & 19 & 20 \\
+\hline 
+blocks & 10 & 11 & 16 \\
+\hline 
+childsnack-opt14-strips & 0 & 4 & 0 \\
+\hline 
+data-network-opt18-strips & 1 & 1 & 6 \\
+\hline 
+depot & 1 & 2 & 2 \\
+\hline 
+driverlog & 3 & 3 & 9 \\
+\hline 
+elevators-opt08-strips & 0 & 2 & 5 \\
+\hline 
+elevators-opt11-strips & 0 & 0 & 3 \\
+\hline 
+floortile-opt11-strips & 0 & 4 & 2 \\
+\hline 
+floortile-opt14-strips & 0 & 2 & 0 \\
+\hline 
+freecell & 2 & 6 & 7 \\
+\hline 
+ged-opt14-strips & 5 & 7 & 10 \\
+\hline 
+grid & 0 & 0 & 1 \\
+\hline 
+gripper & 1 & 17 & 20 \\
+\hline 
+hiking-opt14-strips & 0 & 4 & 3 \\
+\hline 
+logistics00 & 10 & 10 & 7 \\
+\hline 
+logistics98 & 0 & 2 & 2 \\
+\hline 
+miconic & 11 & 30 & 37 \\
+\hline 
+movie & 0 & 30 & 30 \\
+\hline 
+mprime & 11 & 2 & 12 \\
+\hline 
+mystery & 23 & 16 & 19 \\
+\hline 
+nomystery-opt11-strips & 7 & 5 & 4 \\
+\hline 
+openstacks-opt08-strips & 0 & 6 & 7 \\
+\hline 
+openstacks-opt11-strips & 0 & 1 & 2 \\
+\hline 
+openstacks-strips & 0 & 5 & 5 \\
+\hline 
+organic-synthesis-split-opt18-strips & 10 & 13 & 13 \\
+\hline 
+parcprinter-08-strips & 16 & 15 & 24 \\
+\hline 
+parcprinter-opt11-strips & 12 & 11 & 17 \\
+\hline 
+parking-opt11-strips & 0 & 0 & 1 \\
+\hline 
+pathways & 1 & 3 & 3 \\
+\hline 
+pegsol-08-strips & 20 & 19 & 26 \\
+\hline 
+pegsol-opt11-strips & 10 & 7 & 16 \\
+\hline 
+pipesworld-notankage & 5 & 10 & 10 \\
+\hline 
+pipesworld-tankage & 2 & 6 & 6 \\
+\hline 
+psr-small & 42 & 46 & 46 \\
+\hline 
+quantum-layout-opt23-strips & 2 & 2 & 10 \\
+\hline 
+rovers & 4 & 4 & 5 \\
+\hline 
+satellite & 1 & 4 & 5 \\
+\hline 
+scanalyzer-08-strips & 3 & 6 & 4 \\
+\hline 
+scanalyzer-opt11-strips & 1 & 3 & 1 \\
+\hline 
+snake-opt18-strips & 1 & 0 & 2 \\
+\hline 
+sokoban-opt08-strips & 0 & 5 & 5 \\
+\hline 
+sokoban-opt11-strips & 0 & 2 & 2 \\
+\hline 
+spider-opt18-strips & 0 & 3 & 6 \\
+\hline 
+storage & 7 & 13 & 13 \\
+\hline 
+tetris-opt14-strips & 2 & 4 & 3 \\
+\hline 
+tidybot-opt11-strips & 3 & 6 & 9 \\
+\hline 
+tidybot-opt14-strips & 0 & 0 & 1 \\
+\hline 
+tpp & 5 & 6 & 6 \\
+\hline 
+transport-opt08-strips & 2 & 6 & 7 \\
+\hline 
+transport-opt11-strips & 0 & 1 & 2 \\
+\hline 
+transport-opt14-strips & 0 & 1 & 1 \\
+\hline 
+trucks-strips & 0 & 7 & 7 \\
+\hline 
+visitall-opt11-strips & 5 & 7 & 9 \\
+\hline 
+visitall-opt14-strips & 0 & 0 & 3 \\
+\hline 
+woodworking-opt08-strips & 5 & 9 & 20 \\
+\hline 
+woodworking-opt11-strips & 1 & 4 & 14 \\
+\hline 
+zenotravel & 4 & 5 & 8 \\
+\hline 
+total & 267 & 417 & 534 \\
+\hline 

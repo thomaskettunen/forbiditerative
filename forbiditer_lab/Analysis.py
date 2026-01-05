@@ -1,6 +1,6 @@
 import os
 import json
-
+import os
 
 runs = {}
 for file in os.listdir("runs"):
@@ -43,8 +43,8 @@ def DifferentResultsAndTotal(results):
     differentresults["total"] = total
     return differentresults
 
-def generateTable(resultDict):
-    with open("table", "w") as f:
+def generateTable(resultDict, table):
+    with open("analysisFolder/" + table, "w") as f:
         f.write("\\hline \n")
         line = ""
         for planner in runs.keys():
@@ -62,7 +62,8 @@ def generateTable(resultDict):
             f.write(line + "\n")
             f.write("\\hline \n")
 
-
-coverage = ReadData("coverage")
-coverageDiff = DifferentResultsAndTotal(coverage)
-generateTable(coverageDiff)
+parameters = ["coverage", "plans found", "total time"]
+for parameter in parameters:
+    coverage = ReadData(parameter)
+    coverageDiff = DifferentResultsAndTotal(coverage)
+    generateTable(coverageDiff, "table_" + parameter.replace(" ", "_"))
