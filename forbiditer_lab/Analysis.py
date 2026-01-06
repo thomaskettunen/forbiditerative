@@ -28,6 +28,16 @@ def ReadData(parameter):
                 parameterValues[runs[planner][task]["domain"]] = results
     return parameterValues
 
+def GetTotals(results):
+    total = {}
+    for planner in runs.keys():
+        sum = 0
+        for task in results:
+            sum += results[task][planner]
+        total[planner] = sum
+
+    return total
+
 def DifferentResultsAndTotal(results):
     differentresults= {}
     for result in results:
@@ -63,7 +73,11 @@ def generateTable(resultDict, table):
             f.write("\\hline \n")
 
 parameters = ["coverage", "plans found", "total time"]
+totals = {}
 for parameter in parameters:
-    coverage = ReadData(parameter)
-    coverageDiff = DifferentResultsAndTotal(coverage)
-    generateTable(coverageDiff, "table_" + parameter.replace(" ", "_"))
+    data = ReadData(parameter)
+    totals[parameter] = GetTotals(data)
+    dataDiff = DifferentResultsAndTotal(data)
+    generateTable(dataDiff, "table_" + parameter.replace(" ", "_"))
+
+generateTable(totals, "table_totals")
