@@ -38,20 +38,17 @@ def GetTotals(results):
 
     return total
 
-def DifferentResultsAndTotal(results):
-    differentresults= {}
-    for result in results:
-        if(not all(results[result][i] == results[result]["their_run"] for i in results[result].keys())):
-            differentresults[result] = results[result]
+def ResultsAndTotal(results):
+    allresults= results
     total = {}
     for planner in runs.keys():
         sum = 0
-        for task in differentresults:
-            sum += differentresults[task][planner]
+        for task in allresults:
+            sum += allresults[task][planner]
         total[planner] = sum
 
-    differentresults["total"] = total
-    return differentresults
+    allresults["total"] = total
+    return allresults
 
 def generateTable(resultDict, table):
     with open("analysisFolder/" + table, "w") as f:
@@ -77,7 +74,7 @@ totals = {}
 for parameter in parameters:
     data = ReadData(parameter)
     totals[parameter] = GetTotals(data)
-    dataDiff = DifferentResultsAndTotal(data)
+    dataDiff = ResultsAndTotal(data)
     generateTable(dataDiff, "table_" + parameter.replace(" ", "_"))
 
 generateTable(totals, "table_totals")
