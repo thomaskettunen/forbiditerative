@@ -6,6 +6,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-runtimes", action='store_true')
 parser.add_argument("-compare", action='store_true')
+parser.add_argument("-foundall", action='store_true')
 args = parser.parse_args()
 
 runs = {}
@@ -27,25 +28,41 @@ for task in tasks:
         filteredtasks.append(task)
 tasks = filteredtasks
 
-def GetTotalAndLastPlanTime(planner):
-    coverage1 = []
+def GetTotalAndLastPlanTime(planner, found_all = False):
+    if found_all:
+        coverage1_foundall = []
+        coverage1_foundk = []
+    else:
+        coverage1 = []
+
     coverage0 = []
     unsolvable = 0
-    print("----------------------------------------")
-    print(f"For the planner {planner}:")
     for task in tasks:
         if "plans found" in runs[planner][task] and runs[planner][task]["plans found"] != 0:
                 if runs[planner][task]["coverage"] == 1:
-                     coverage1.append((runs[planner][task]["last plan time_mean"],runs[planner][task]["total time"]))
+                    if found_all:
+                        if runs[planner][task]["exit code"] == "ExitCode.FOUND_ALL":
+                            coverage1_foundall.append((runs[planner][task]["last plan time_mean"],runs[planner][task]["total time"]))
+                        else:
+                            coverage1_foundk.append((runs[planner][task]["last plan time_mean"],runs[planner][task]["total time"]))
+                    else:
+                        coverage1.append((runs[planner][task]["last plan time_mean"],runs[planner][task]["total time"]))
                 else:
                      coverage0.append((runs[planner][task]["last plan time_mean"],runs[planner][task]["total time"]))
         elif "plans found" in runs[planner][task] and runs[planner][task]["plans found"] == 0 and runs[planner][task]["coverage"] == 1:
             unsolvable +=1
-    print(f"{len(coverage1)} planning tasks are solved.")
-    print(f"{unsolvable} tasks are unsolvable.")
-    print(f"At least one plan is found for {len(coverage0)} unsolved planning tasks")
-    print(f"{len(tasks) -(len(coverage0)+len(coverage1)+unsolvable)} planning tasks are unsolved.")
-    return coverage0, coverage1
+    if not found_all:
+        print("----------------------------------------")
+        print(f"For the planner {planner}:")
+        print(f"{len(coverage1)} planning tasks are solved.")
+        print(f"{unsolvable} tasks are unsolvable.")
+        print(f"At least one plan is found for {len(coverage0)} unsolved planning tasks")
+        print(f"{len(tasks) -(len(coverage0)+len(coverage1)+unsolvable)} planning tasks are unsolved.")
+
+    if found_all:
+        return coverage0, coverage1_foundall, coverage1_foundk
+    else:
+        return coverage0, coverage1
 
 def ComparePlannerTimes(planner1, planner2):
     times = []
@@ -90,22 +107,59 @@ def CountUnsolved(times):
                  
 
 if args.runtimes:
-    for planner in runs.keys():
-        coverage0, coverage1 = GetTotalAndLastPlanTime(planner)
-        for coverage in [("unsolved", coverage0), ("solved", coverage1)]:    
-            x_val = [data[0] for data in coverage[1]]
-            y_val = [data[1] for data in coverage[1]]
-            if coverage[0] == "unsolved":
+    if args.foundall:
+            for planner in ["our_run_prefix1","our_run_prefix2"]:
+                coverage0, coverage1foundall, coverage1foundk = GetTotalAndLastPlanTime(planner, True)
+                print(len(coverage1foundall))
+                print(len(coverage1foundk))
+                for coverage in [("unsolved", coverage0), ("solved foundall", coverage1foundall), ("solved foundk", coverage1foundk)]:    
+                    x_val = [data[0] for data in coverage[1]]
+                    y_val = [data[1] for data in coverage[1]]
+                    plt.ecdf(x_val)
+                    plt.title(planner +" "+ coverage[0])
+                    plt.xlabel("last plan time")
+                    plt.xlim(0,600)
+                    plt.savefig("analysisFolder/"+ planner +" "+ coverage[0]+" cdf")
+                    plt.close()
+
+                    plt.ecdf(y_val)
+                    plt.title(planner +" "+ coverage[0])
+                    plt.xlabel("total plan time")
+                    plt.xlim(0,600)
+                    plt.savefig("analysisFolder/"+ planner +" "+ coverage[0]+" total plan time cdf")
+                    plt.close()
+                    
+                    if coverage[0] != "solved":
+                        plt.scatter(x_val,y_val)
+                        plt.title(planner +" "+ coverage[0])
+                        plt.xlabel("last plan time")
+                        plt.ylabel("total time")
+                        plt.xlim(0,600)
+                        plt.ylim(0,600)
+                        plt.savefig("analysisFolder/"+ planner +" "+ coverage[0])
+                        plt.close()
+    else:
+        for planner in runs.keys():
+            coverage0, coverage1 = GetTotalAndLastPlanTime(planner)
+            for coverage in [("unsolved", coverage0), ("solved", coverage1)]:    
+                x_val = [data[0] for data in coverage[1]]
+                y_val = [data[1] for data in coverage[1]]
                 plt.ecdf(x_val)
-            else:
-                plt.scatter(x_val,y_val)
-                plt.ylabel("total time")
-                plt.ylim(0,600)
-            plt.title(planner +" "+ coverage[0])
-            plt.xlabel("last plan time")
-            plt.xlim(0,600)
-            plt.savefig("analysisFolder/"+ planner +" "+ coverage[0])
-            plt.close()
+                plt.title(planner +" "+ coverage[0])
+                plt.xlabel("last plan time")
+                plt.xlim(0,600)
+                plt.savefig("analysisFolder/"+ planner +" "+ coverage[0]+" cdf")
+                plt.close()
+                if coverage[0] == "solved":
+                    plt.scatter(x_val,y_val)
+                    plt.title(planner +" "+ coverage[0])
+                    plt.xlabel("last plan time")
+                    plt.ylabel("total time")
+                    plt.xlim(0,600)
+                    plt.ylim(0,600)
+                    plt.savefig("analysisFolder/"+ planner +" "+ coverage[0])
+                    plt.close()
+
 
 if args.compare:
     for planner in ["our_run_prefix1","our_run_prefix2"]:
