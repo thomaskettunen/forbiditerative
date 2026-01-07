@@ -15,16 +15,36 @@ for file in os.listdir("runs"):
 
 
 tasks = runs["their_run"].keys()
+print(len(tasks))
+filteredtasks = []
+
+for task in tasks:
+    count = 0
+    for planner in runs.keys():
+        if "coverage" not in runs[planner][task]:
+            count +=1
+    if count == 0:
+        filteredtasks.append(task)
+tasks = filteredtasks
 
 def GetTotalAndLastPlanTime(planner):
     coverage1 = []
     coverage0 = []
+    unsolvable = 0
+    print("----------------------------------------")
+    print(f"For the planner {planner}:")
     for task in tasks:
         if "plans found" in runs[planner][task] and runs[planner][task]["plans found"] != 0:
                 if runs[planner][task]["coverage"] == 1:
                      coverage1.append((runs[planner][task]["last plan time_mean"],runs[planner][task]["total time"]))
                 else:
                      coverage0.append((runs[planner][task]["last plan time_mean"],runs[planner][task]["total time"]))
+        elif "plans found" in runs[planner][task] and runs[planner][task]["plans found"] == 0 and runs[planner][task]["coverage"] == 1:
+            unsolvable +=1
+    print(f"{len(coverage1)} planning tasks are solved.")
+    print(f"{unsolvable} tasks are unsolvable.")
+    print(f"At least one plan is found for {len(coverage0)} unsolved planning tasks")
+    print(f"{len(tasks) -(len(coverage0)+len(coverage1)+unsolvable)} planning tasks are unsolved.")
     return coverage0, coverage1
 
 def ComparePlannerTimes(planner1, planner2):
@@ -75,13 +95,17 @@ if args.runtimes:
         for coverage in [("unsolved", coverage0), ("solved", coverage1)]:    
             x_val = [data[0] for data in coverage[1]]
             y_val = [data[1] for data in coverage[1]]
-            plt.scatter(x_val,y_val)
+            if coverage[0] == "unsolved":
+                plt.ecdf(x_val)
+            else:
+                plt.scatter(x_val,y_val)
+                plt.ylabel("total time")
+                plt.ylim(0,600)
             plt.title(planner +" "+ coverage[0])
             plt.xlabel("last plan time")
-            plt.ylabel("total time")
             plt.xlim(0,600)
-            plt.ylim(0,600)
-            plt.show()
+            plt.savefig("analysisFolder/"+ planner +" "+ coverage[0])
+            plt.close()
 
 if args.compare:
     for planner in ["our_run_prefix1","our_run_prefix2"]:
@@ -99,5 +123,6 @@ if args.compare:
         plt.ylabel("their_run")
         plt.xlim(0,600)
         plt.ylim(0,600)
-        plt.show()
+        plt.savefig("analysisFolder/" + "their run" +" vs "+ planner)
+        plt.close()
         
