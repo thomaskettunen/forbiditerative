@@ -110,8 +110,6 @@ if args.runtimes:
     if args.foundall:
             for planner in ["our_run_prefix1","our_run_prefix2"]:
                 coverage0, coverage1foundall, coverage1foundk = GetTotalAndLastPlanTime(planner, True)
-                print(len(coverage1foundall))
-                print(len(coverage1foundk))
                 for coverage in [("unsolved", coverage0), ("solved foundall", coverage1foundall), ("solved foundk", coverage1foundk)]:    
                     x_val = [data[0] for data in coverage[1]]
                     y_val = [data[1] for data in coverage[1]]
