@@ -101,6 +101,7 @@ ENV = LocalEnvironment(processes=2)
 SUITE = benchmarks
 ATTRIBUTES = [
     "error",
+    "over_k",
     Attribute("exit code"),
     Attribute("total time", min_wins=True),
     Attribute("coverage", min_wins=False, scale="linear"),
