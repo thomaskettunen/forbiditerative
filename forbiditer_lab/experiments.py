@@ -162,7 +162,7 @@ exp.add_step("parse", exp.parse)
 exp.add_fetcher(name="fetch")
 
 # Make a report.
-exp.add_report(BaseReport(attributes=ATTRIBUTES), outfile="report.html")
+exp.add_report(BaseReport(attributes=ATTRIBUTES, filter = lambda data: data['domain'] not in ["agricola-opt18-strips", "data-network-opt18-strips", "woodworking-opt08-strips", "woodworking-opt11-strips",]), outfile="report.html")
 
 # Parse the commandline and run the specified steps.
 exp.run_steps()
