@@ -7,6 +7,12 @@ for file in os.listdir("runs"):
     with open(f"runs/{file}/data/experiments-eval/properties","r") as f:
         runs[file] = json.load(f)
 
+names = {
+    "their_run":"FI submultiset",
+    "our_run_prefix1":"Grouped prefix 1",
+    "our_run_prefix2":"Grouped prefix 2"
+}
+plannerOrderInTables = ["our_run_prefix1", "our_run_prefix2", "their_run"]
 
 tasks = runs["their_run"].keys()
 
@@ -29,7 +35,7 @@ def ReadData(parameter):
     return parameterValues
 
 def CountExitCodes():
-    planners = ["our_run_prefix1", "our_run_prefix2"]
+    planners = runs.keys()
     results={}
     for planner in planners:
         results[planner] = {}
@@ -43,7 +49,7 @@ def CountExitCodes():
                 if runs[planner][task]["exit code"] in results[planner]:
                     results[planner][runs[planner][task]["exit code"]] += 1
                 else:
-                    results[planner][runs[planner][task]["exit code"]] = 0
+                    results[planner][runs[planner][task]["exit code"]] = 1
     return results
 
 
@@ -73,15 +79,15 @@ def generateTable(resultDict, table):
     with open("analysisFolder/" + table, "w") as f:
         f.write("\\hline \n")
         line = ""
-        for planner in runs.keys():
-            line += f"{planner} & "
+        for planner in plannerOrderInTables:
+            line += f"{names[planner]} & "
         line = line.removesuffix(" & ")
         line += " \\\\"
         f.write(line + "\n")
         f.write("\\hline \n")
         for task in resultDict:
             line = f"{task} & "
-            for planner in runs.keys():
+            for planner in plannerOrderInTables:
                 line += f"{resultDict[task][planner]} & "
             line = line.removesuffix(" & ")
             line += " \\\\"
@@ -92,16 +98,19 @@ def generateExitCodeTable(exitCodeDict):
     with open("analysisFolder/ExitCodes", "w") as f:
         f.write("\\hline \n")
         line = "Exit Code & "
-        for planner in exitCodeDict.keys():
-            line += f"{planner} & "
+        for planner in plannerOrderInTables:
+            line += f"{names[planner]} & "
         line = line.removesuffix(" & ")
         line += " \\\\"
         f.write(line + "\n")
         f.write("\\hline \n")
         for code in exitCodeDict["our_run_prefix1"]:
             line = f"{code} & "
-            for planner in exitCodeDict.keys():
-                line += f"{exitCodeDict[planner][code]} & "
+            for planner in plannerOrderInTables:
+                if(code in exitCodeDict[planner]):
+                    line += f"{exitCodeDict[planner][code]} & "
+                else:
+                    line += "0 & "
             line = line.removesuffix(" & ")
             line += " \\\\"
             f.write(line + "\n")

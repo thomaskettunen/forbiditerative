@@ -15,6 +15,12 @@ for file in os.listdir("runs"):
         runs[file] = json.load(f)
 
 
+names = {
+    "their_run":"FI submultiset",
+    "our_run_prefix1":"Grouped prefix 1",
+    "our_run_prefix2":"Grouped prefix 2"
+}
+
 tasks = runs["their_run"].keys()
 print(len(tasks))
 filteredtasks = []
@@ -114,24 +120,24 @@ if args.runtimes:
                     x_val = [data[0] for data in coverage[1]]
                     y_val = [data[1] for data in coverage[1]]
                     plt.ecdf(x_val)
-                    plt.title(planner +" "+ coverage[0])
-                    plt.xlabel("last plan time")
+                    plt.title(names[planner] +" "+ coverage[0])
+                    plt.xlabel("Last plan time")
                     plt.xlim(0,600)
                     plt.savefig("analysisFolder/"+ planner +" "+ coverage[0]+" cdf")
                     plt.close()
 
                     plt.ecdf(y_val)
-                    plt.title(planner +" "+ coverage[0])
-                    plt.xlabel("total plan time")
+                    plt.title(names[planner] +" "+ coverage[0])
+                    plt.xlabel("Total plan time")
                     plt.xlim(0,600)
                     plt.savefig("analysisFolder/"+ planner +" "+ coverage[0]+" total plan time cdf")
                     plt.close()
                     
                     if coverage[0] != "solved":
                         plt.scatter(x_val,y_val)
-                        plt.title(planner +" "+ coverage[0])
-                        plt.xlabel("last plan time")
-                        plt.ylabel("total time")
+                        plt.title(names[planner] +" "+ coverage[0])
+                        plt.xlabel("Last plan time")
+                        plt.ylabel("Total time")
                         plt.xlim(0,600)
                         plt.ylim(0,600)
                         plt.savefig("analysisFolder/"+ planner +" "+ coverage[0])
@@ -143,14 +149,14 @@ if args.runtimes:
                 x_val = [data[0] for data in coverage[1]]
                 y_val = [data[1] for data in coverage[1]]
                 plt.ecdf(x_val)
-                plt.title(planner +" "+ coverage[0])
+                plt.title(names[planner] +" "+ coverage[0])
                 plt.xlabel("last plan time")
                 plt.xlim(0,600)
                 plt.savefig("analysisFolder/"+ planner +" "+ coverage[0]+" cdf")
                 plt.close()
                 if coverage[0] == "solved":
                     plt.scatter(x_val,y_val)
-                    plt.title(planner +" "+ coverage[0])
+                    plt.title(names[planner] +" "+ coverage[0])
                     plt.xlabel("last plan time")
                     plt.ylabel("total time")
                     plt.xlim(0,600)
