@@ -3,18 +3,28 @@ import json
 import os
 
 runs = {}
-for file in os.listdir("runs"):
+for file in ["our_run_prefix1","our_run_prefix2","their_run_with_fix2"]:
     with open(f"runs/{file}/data/experiments-eval/properties","r") as f:
         runs[file] = json.load(f)
 
 names = {
-    "their_run":"FI submultiset",
+    "their_run_with_fix2":"FI submultiset",
     "our_run_prefix1":"Grouped prefix 1",
     "our_run_prefix2":"Grouped prefix 2"
 }
-plannerOrderInTables = ["our_run_prefix1", "our_run_prefix2", "their_run"]
+plannerOrderInTables = ["our_run_prefix1", "our_run_prefix2", "their_run_with_fix2"]
 
-tasks = runs["their_run"].keys()
+tasks = runs["their_run_with_fix2"].keys()
+filteredtasks = []
+for task in tasks:
+    notIncluded = False
+    for domain in ["agricola-opt18-strips", "data-network-opt18-strips", "woodworking-opt08-strips", "woodworking-opt11-strips", "organic-synthesis-split-opt18-strips-p08.pddl"]:
+        if domain in task:
+            notIncluded = True
+    if not notIncluded:
+        filteredtasks.append(task)
+tasks = filteredtasks
+print(f"{len(tasks)} tasks")
 
 def ReadData(parameter):
     parameterValues = {}

@@ -10,29 +10,30 @@ parser.add_argument("-foundall", action='store_true')
 args = parser.parse_args()
 
 runs = {}
-for file in os.listdir("runs"):
+for file in ["our_run_prefix1","our_run_prefix2","their_run_with_fix2"]:
     with open(f"runs/{file}/data/experiments-eval/properties","r") as f:
         runs[file] = json.load(f)
 
 
 names = {
-    "their_run":"FI submultiset",
+    "their_run_with_fix2":"FI submultiset",
     "our_run_prefix1":"Grouped prefix 1",
     "our_run_prefix2":"Grouped prefix 2"
 }
 
-tasks = runs["their_run"].keys()
-print(len(tasks))
+tasks = runs["their_run_with_fix2"].keys()
 filteredtasks = []
 
 for task in tasks:
     count = 0
-    for planner in runs.keys():
-        if "coverage" not in runs[planner][task]:
-            count +=1
-    if count == 0:
+    notIncludedDomain = False
+    for domain in ["agricola-opt18-strips", "data-network-opt18-strips", "woodworking-opt08-strips", "woodworking-opt11-strips", "organic-synthesis-split-opt18-strips-p08.pddl"]:
+        if domain in task:
+            notIncludedDomain = True
+    if not notIncludedDomain:
         filteredtasks.append(task)
 tasks = filteredtasks
+print(f"{len(tasks)} tasks")
 
 def GetTotalAndLastPlanTime(planner, found_all = False):
     if found_all:
@@ -167,7 +168,7 @@ if args.runtimes:
 
 if args.compare:
     for planner in ["our_run_prefix1","our_run_prefix2"]:
-        times = ComparePlannerTimes(planner, "their_run")
+        times = ComparePlannerTimes(planner, "their_run_with_fix2")
         x_val = [data[0] for data in times]
         y_val = [data[1] for data in times]
 
@@ -176,9 +177,9 @@ if args.compare:
         print(f"Of {len(times)} planning tasks, {their_unsolved} tasks were unsolved by their planner, {our_unsolved} were unsolved by our planner, {both_unsolved} were unsolved by both")
 
         plt.scatter(x_val,y_val)
-        plt.title(f"Their run vs {planner}")
+        plt.title(f"{names['their_run_with_fix2']} vs {names[planner]}")
         plt.xlabel(planner)
-        plt.ylabel("their_run")
+        plt.ylabel("their_run_with_fix2")
         plt.xlim(0,600)
         plt.ylim(0,600)
         plt.savefig("analysisFolder/" + "their run" +" vs "+ planner)
