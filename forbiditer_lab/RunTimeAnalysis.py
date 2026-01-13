@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-runtimes", action='store_true')
 parser.add_argument("-compare", action='store_true')
 parser.add_argument("-foundall", action='store_true')
+parser.add_argument("-log", action="store_true")
 args = parser.parse_args()
 
 runs = {}
@@ -17,8 +18,8 @@ for file in ["our_run_prefix1","our_run_prefix2","their_run_with_fix2"]:
 
 names = {
     "their_run_with_fix2":"FI submultiset",
-    "our_run_prefix1":"Grouped prefix 1",
-    "our_run_prefix2":"Grouped prefix 2"
+    "our_run_prefix1":"Grouped prefix₁",
+    "our_run_prefix2":"Grouped prefix₂"
 }
 
 tasks = runs["their_run_with_fix2"].keys()
@@ -134,15 +135,32 @@ if args.runtimes:
                     plt.savefig("analysisFolder/"+ planner +" "+ coverage[0]+" total plan time cdf")
                     plt.close()
                     
-                    if coverage[0] != "solved":
+                    if coverage[0] == "unsolved":
                         plt.scatter(x_val,y_val)
                         plt.title(names[planner] +" "+ coverage[0])
                         plt.xlabel("Last plan time")
                         plt.ylabel("Total time")
+                        if args.log:
+                            plt.xscale("log", base=2)
+                            plt.yscale("log", base=2)
                         plt.xlim(0,600)
                         plt.ylim(0,600)
                         plt.savefig("analysisFolder/"+ planner +" "+ coverage[0])
                         plt.close()
+                    if coverage[0] == "solved foundall":
+                        plt.scatter(x_val,y_val)
+                        plt.title(names[planner] +" "+ coverage[0])
+                        plt.xlabel("last plan time")
+                        plt.ylabel("total time")
+                        if args.log:
+                            plt.xscale("log", base=2)
+                            plt.yscale("log", base=2)
+                        plt.xlim(0,600)
+                        plt.ylim(0,600)
+                        plt.savefig("analysisFolder/"+ planner +" "+ coverage[0])
+                        plt.close()
+
+
     else:
         for planner in runs.keys():
             coverage0, coverage1 = GetTotalAndLastPlanTime(planner)
@@ -160,6 +178,9 @@ if args.runtimes:
                     plt.title(names[planner] +" "+ coverage[0])
                     plt.xlabel("last plan time")
                     plt.ylabel("total time")
+                    if args.log:
+                        plt.xscale("log", base=2)
+                        plt.yscale("log", base=2)
                     plt.xlim(0,600)
                     plt.ylim(0,600)
                     plt.savefig("analysisFolder/"+ planner +" "+ coverage[0])
@@ -178,8 +199,11 @@ if args.compare:
 
         plt.scatter(x_val,y_val)
         plt.title(f"{names['their_run_with_fix2']} vs {names[planner]}")
-        plt.xlabel(planner)
-        plt.ylabel("their_run_with_fix2")
+        plt.xlabel(names[planner])
+        plt.ylabel(names["their_run_with_fix2"])
+        if args.log:
+            plt.xscale("log", base=2)
+            plt.yscale("log", base=2)
         plt.xlim(0,600)
         plt.ylim(0,600)
         plt.savefig("analysisFolder/" + "their run" +" vs "+ planner)
