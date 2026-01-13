@@ -62,6 +62,16 @@ def CountExitCodes():
                     results[planner][runs[planner][task]["exit code"]] = 1
     return results
 
+def PlansFoundByPlanner():
+    values = {}
+    for planner in runs.keys():
+        values[planner] = {}
+        for i in range(6):
+            values[planner][i] = 0
+    for task in tasks:
+        for planner in runs.keys():
+            values[planner][runs[planner][task]["plans found"]] += 1
+    return values
 
 def GetTotals(results):
     total = {}
@@ -126,6 +136,25 @@ def generateExitCodeTable(exitCodeDict):
             f.write(line + "\n")
             f.write("\\hline \n")
 
+def generatePlanCountTable(plancounts):
+     with open("analysisFolder/planCounts", "w") as f:
+        f.write("\\hline \n")
+        line = ""
+        for planner in plannerOrderInTables:
+            line += f"{names[planner]} & "
+        line = line.removesuffix(" & ")
+        line += " \\\\"
+        f.write(line + "\n")
+        f.write("\\hline \n")
+        for i in range(6):
+            line = f"{i} & "
+            for planner in plannerOrderInTables:
+                line += f"{plancounts[planner][i]} & "
+            line = line.removesuffix(" & ")
+            line += " \\\\"
+            f.write(line + "\n")
+            f.write("\\hline \n")
+
 
 parameters = ["coverage", "plans found", "total time"]
 totals = {}
@@ -137,3 +166,4 @@ for parameter in parameters:
 
 generateTable(totals, "table_totals")
 generateExitCodeTable(CountExitCodes())
+generatePlanCountTable(PlansFoundByPlanner())
