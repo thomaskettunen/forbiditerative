@@ -69,8 +69,8 @@ for task in suites.build_suite(BENCHMARKS_DIR, SUITE):
     # We could also use exp.add_resource().
     run.add_command(
         "run-planner",
-        [os.environ["PLANNER"], "{domain}", "{problem}", f'{os.environ["K"]}', '--overall-time-limit', f'{TIME_LIMIT}'],
-        # [os.environ["PLANNER"], "{domain}", "{problem}", '1000', '--number-of-plans', f'{os.environ["K"]}', '--overall-time-limit', f'{TIME_LIMIT}'], #!!! USE FOR THEIRS LMAO
+        # [os.environ["PLANNER"], "{domain}", "{problem}", f'{os.environ["K"]}', '--overall-time-limit', f'{TIME_LIMIT}'],
+        [os.environ["PLANNER"], "{domain}", "{problem}", '1000', '--number-of-plans', f'{os.environ["K"]}', '--overall-time-limit', f'{TIME_LIMIT}'], #!!! USE FOR THEIRS LMAO
         time_limit=TIME_LIMIT,
         memory_limit=MEMORY_LIMIT,
     )
@@ -78,7 +78,7 @@ for task in suites.build_suite(BENCHMARKS_DIR, SUITE):
     # 'domain', 'problem', 'algorithm', 'coverage'.
     run.set_property("domain", task.domain)
     run.set_property("problem", task.problem)
-    run.set_property("algorithm", "Prefix_2")
+    run.set_property("algorithm", "FI")
     # BaseReport needs the following properties:
     # 'time_limit', 'memory_limit'.
     run.set_property("time_limit", TIME_LIMIT)
@@ -87,7 +87,7 @@ for task in suites.build_suite(BENCHMARKS_DIR, SUITE):
     # Every run has to have a unique id in the form of a list.
     # The algorithm name is only really needed when there are
     # multiple algorithms.
-    run.set_property("id", ["Prefix_2", task.domain, task.problem])
+    run.set_property("id", ["FI", task.domain, task.problem])
 
 # Add step that writes experiment files to disk.
 exp.add_step("build", exp.build)
