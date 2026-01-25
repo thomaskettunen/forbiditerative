@@ -108,7 +108,7 @@ from parser import FIParser
 exp.add_parser(FIParser())
 
 SEARCH = "forbiditer"
-GROUPING = "prefix(1)"
+GROUPING = "prefix(2)"
 
 for task in suites.build_suite(BENCHMARKS_DIR, SUITE):
     run = exp.add_run()
