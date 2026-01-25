@@ -630,7 +630,7 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
     // ASS: BEGIN GROUPING STUFF
     auto group_name_to_group_id = make_shared<unordered_map<string, int>>();
 
-    printf("Operator Grouping function: prefix_2\n");
+    printf("Operator Grouping function: prefix_1\n");
 
     std::function<std::string(int)> get_group_name = [group_name_to_group_id](int group_no) {
         for (auto &it : *group_name_to_group_id) {
@@ -643,7 +643,8 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
         // ASS: map from operator name (string) to group name (string)
         std::function<string(std::string)> op_name_to_group_name = [](std::string op_name) {
             // ASS: This is prefix
-            return op_name.substr(0, op_name.find(' ', op_name.find(' ') + 1));
+            return op_name.substr(0, op_name.find(' ')); //. Prefix_1 (remember to change the name!!)
+            // return op_name.substr(0, op_name.find(' ', op_name.find(' ') + 1)); //. Prefix_2 (remember to change the name!!)
         };
 
         auto op_name = task->get_operator_name(op_id, false);
