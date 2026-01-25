@@ -180,7 +180,7 @@ class BasePlannerCall(PlannerCall):
 
 class BaseCostOptimalPlannerCall(BasePlannerCall):
     def planner_args(self, **kwargs):
-        bound_opt = "bound={cost_bound},".format(**kwargs) if "cost_bound" in kwargs else ""
+        bound_opt = ""
         if "consistent" in kwargs and kwargs["consistent"]:
             return ["--symmetries",
                     "sym=structural_symmetries(time_bound=0,search_symmetries=oss, \
@@ -222,7 +222,7 @@ class ShortestOptimalPlannerCall(PlannerCall):
 
     def planner_args(self, **kwargs):
         shortest = "shortest" in kwargs and kwargs["shortest"]
-        bound_opt = "bound={cost_bound},".format(**kwargs) if "cost_bound" in kwargs else ""
+        bound_opt = ""
         search_opt = "shortest_astar" if shortest else "astar"
         return [
         "--if-conditional-effects", "--evaluator", "h=celmcut()",

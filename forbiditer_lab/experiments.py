@@ -28,13 +28,11 @@ class BaseReport(AbsoluteReport):
     ]
 
 benchmarks = [
-    "agricola-opt18-strips",
     "airport",
     # "barman-opt11-strips",
     # "barman-opt14-strips",
     # "blocks",
     # "childsnack-opt14-strips",
-    # "data-network-opt18-strips",
     # "depot",
     # "driverlog",
     # "elevators-opt08-strips",
@@ -91,13 +89,11 @@ benchmarks = [
     # "trucks-strips",
     # "visitall-opt11-strips",
     # "visitall-opt14-strips",
-    # "woodworking-opt08-strips",
-    # "woodworking-opt11-strips",
     # "zenotravel",
 ]
 
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-ENV = LocalEnvironment(processes=2)
+ENV = LocalEnvironment(processes=9)
 SUITE = benchmarks
 ATTRIBUTES = [
     "error",
@@ -131,6 +127,7 @@ for task in suites.build_suite(BENCHMARKS_DIR, SUITE):
     run.add_command(
         "run-planner",
         [os.environ["PLANNER"], "{domain}", "{problem}", f'{os.environ["K"]}', '--overall-time-limit', f'{TIME_LIMIT}'],
+        # [os.environ["PLANNER"], "{domain}", "{problem}", '1000', '--number-of-plans', f'{os.environ["K"]}', '--overall-time-limit', f'{TIME_LIMIT}'], #!!! USE FOR THEIRS LMAO
         time_limit=TIME_LIMIT,
         memory_limit=MEMORY_LIMIT,
     )
@@ -163,7 +160,7 @@ exp.add_step("parse", exp.parse)
 exp.add_fetcher(name="fetch")
 
 # Make a report.
-exp.add_report(BaseReport(attributes=ATTRIBUTES, filter = lambda data: data['domain'] not in ["agricola-opt18-strips", "data-network-opt18-strips", "woodworking-opt08-strips", "woodworking-opt11-strips",]), outfile="report.html")
+exp.add_report(BaseReport(attributes=ATTRIBUTES, filter = lambda data: data['domain'] not in ["agricola-opt18-strips", "data-network-opt18-strips", "woodworking-opt08-strips", "woodworking-opt11-strips"] and not (data['domain'] == 'organic-synthesis-split-opt18-strips' and data['problem'] == 'p08.pddl')), outfile="report.html")
 
 # Parse the commandline and run the specified steps.
 exp.run_steps()

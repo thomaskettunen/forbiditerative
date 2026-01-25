@@ -1,9 +1,7 @@
 #!/bin/bash
-
 # $1 domain
 # $2 problem
 # $3 quality bound (>= 1.0)
-# $4 k bound (optional)
 
 NUM_REQUIRED_ARGS=3
 

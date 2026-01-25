@@ -17,7 +17,10 @@ K_FLAG="--k"
 K_DEFAULT="5"
 
 while [ "$#" -ge 1 ] && [ "$1" != "--" ]; do
-    if [ "$#" -ge 1 ] && [ "$1" != "--*" ]; then #. key-value args
+    echo
+    echo "$#"
+    echo "$1"
+    if [ "$#" -ge 1 ] && [ "$1" == "--*" ]; then #. key-value args
         if [ "$#" -ge 1 ] && [ "$1" == "$PLANNER_FLAG" ]; then
             shift;
             if [ "$#" -ge 1 ] && [ "$1" != "--" ]; then
@@ -30,6 +33,7 @@ while [ "$#" -ge 1 ] && [ "$1" != "--" ]; do
         if [ "$#" -ge 1 ] && [ "$1" == "$BENCHMARKS_FLAG" ]; then
             shift;
             if [ "$#" -ge 1 ] && [ "$1" != "--" ]; then
+                echo path1.2.1
                 BENCHMARKS="$1"; shift;
             else
                 echo "--benchmark expects a path"
