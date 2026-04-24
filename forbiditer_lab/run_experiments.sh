@@ -16,50 +16,61 @@ K=""
 K_FLAG="--k"
 K_DEFAULT="5"
 
-while [ "$#" -ge 1 ] && [ "$1" != "--" ]; do
-    echo
-    echo "$#"
-    echo "$1"
-    if [ "$#" -ge 1 ] && [ "$1" == "--*" ]; then #. key-value args
+while [ "$#" -ge 1 ] && [ "$1" != -- ]; do
+    if [ "$#" -ge 1 ] && [[ "$1" == --* ]]; then #. key-value args
         if [ "$#" -ge 1 ] && [ "$1" == "$PLANNER_FLAG" ]; then
             shift;
-            if [ "$#" -ge 1 ] && [ "$1" != "--" ]; then
+            if [ "$#" -ge 1 ] && [ "$1" != -- ]; then
                 PLANNER="$1"; shift;
+                continue;
             else
-                echo "--planner expects a path"
+                echo "$PLANNER_FLAG expects a path";
+                exit -1;
             fi
         fi
 
         if [ "$#" -ge 1 ] && [ "$1" == "$BENCHMARKS_FLAG" ]; then
             shift;
-            if [ "$#" -ge 1 ] && [ "$1" != "--" ]; then
-                echo path1.2.1
+            if [ "$#" -ge 1 ] && [ "$1" != -- ]; then
                 BENCHMARKS="$1"; shift;
+                continue;
             else
-                echo "--benchmark expects a path"
+                echo "$BENCHMARKS_FLAG expects a path";
+                exit -1;
             fi
         fi
 
         if [ "$#" -ge 1 ] && [ "$1" == "$K_FLAG" ]; then
             shift;
-            if [ "$#" -ge 1 ] && [ "$1" != "--" ]; then
+            if [ "$#" -ge 1 ] && [ "$1" != -- ]; then
                 K="$1"; shift;
+                continue;
             else
-                echo "--k expects a num"
+                echo "$K_FLAG expects a num";
+                exit -1;
             fi
         fi
+
+        echo "Unknown option: \"$1\"";
+        exit -1;
     else #. positional args
-        if [ "$PLANNER" == "" ] && [ "$#" -ge 1 ] && [ "$1" != "--" ]; then
+        if [ "$PLANNER" == "" ] && [ "$#" -ge 1 ] && [ "$1" != -- ]; then
             PLANNER="$1"; shift;
+            continue;
         fi
 
-        if [ "$BENCHMARKS" == "" ] && [ "$#" -ge 1 ] && [ "$1" != "--" ]; then
+        if [ "$BENCHMARKS" == "" ] && [ "$#" -ge 1 ] && [ "$1" != -- ]; then
             BENCHMARKS="$1"; shift;
+            continue;
         fi
 
-        if [ "$K" == "" ] && [ "$#" -ge 1 ] && [ "$1" != "--" ]; then
+        if [ "$K" == "" ] && [ "$#" -ge 1 ] && [ "$1" != -- ]; then
             K="$1"; shift;
+            continue;
         fi
+
+        echo "Unknown positional arg: \"$1\"";
+        exit -1;
     fi
 done
 
@@ -69,9 +80,12 @@ if [ "$BENCHMARKS" == "" ]; then BENCHMARKS="$BENCHMARKS_DEFAULT"; fi
 if [ "$K" == "" ]; then K="$K_DEFAULT"; fi
 
 export PLANNER=$(readlink -f "$PLANNER")
+echo "exporting PLANNER=$(readlink -f "$PLANNER")"
 export DOWNWARD_BENCHMARKS=$(readlink -f "$BENCHMARKS")
+echo "exporting DOWNWARD_BENCHMARKS=$(readlink -f "$BENCHMARKS")"
 export K="$K"
+echo "exporting K="$K""
 
-if [ "$1" == "--" ]; then shift; fi
+if [ "$1" == -- ]; then shift; fi
 
 uv run ./experiments.py "$@"
