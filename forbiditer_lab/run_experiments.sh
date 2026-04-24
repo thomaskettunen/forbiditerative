@@ -88,4 +88,4 @@ echo "exporting K="$K""
 
 if [ "$1" == -- ]; then shift; fi
 
-uv run ./experiments.py "$@"
+./experiments.py "$@"

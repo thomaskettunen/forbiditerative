@@ -2,4 +2,4 @@ data/
 runs/
 *.zip
 *.zip.old
-uv.lock
+.venv/
