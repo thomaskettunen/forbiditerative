@@ -3,8 +3,9 @@
 # $1 domain
 # $2 problem
 # $3 number of plans (k)
+# $4 prefix for grouping
 
-NUM_REQUIRED_ARGS=3
+NUM_REQUIRED_ARGS=4
 
 if [ "$#" -lt $NUM_REQUIRED_ARGS ]; then
     echo "Illegal number of parameters"
@@ -12,8 +13,8 @@ if [ "$#" -lt $NUM_REQUIRED_ARGS ]; then
 fi
 
 SOURCE="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"
-echo ""$(readlink -f "${BASH_SOURCE[0]}")":${LINENO} INFO Running: "$SOURCE/forbiditerative/plan.py" --planner supermultisetgroups_topk --domain $1 --problem $2 --number-of-plans $3 --use-local-folder --clean-local-folder "${@:NUM_REQUIRED_ARGS+1:9999}""
+echo ""$(readlink -f "${BASH_SOURCE[0]}")":${LINENO} INFO Running: "$SOURCE/forbiditerative/plan.py" --planner supermultisetgroups_topk --domain $1 --problem $2 --number-of-plans $3 --prefix $4 --use-local-folder --clean-local-folder "${@:NUM_REQUIRED_ARGS+1:9999}""
 
-export PYTHONPATH="$SOURCE" && "$SOURCE/forbiditerative/plan.py" --planner supermultisetgroups_topk --domain $1 --problem $2 --number-of-plans $3 --use-local-folder --clean-local-folder "${@:NUM_REQUIRED_ARGS+1:9999}" # --suppress-planners-output # --reordering "NONE"
+export PYTHONPATH="$SOURCE" && "$SOURCE/forbiditerative/plan.py" --planner supermultisetgroups_topk --domain $1 --problem $2 --number-of-plans $3 --prefix $4 --use-local-folder --clean-local-folder "${@:NUM_REQUIRED_ARGS+1:9999}" # --suppress-planners-output # --reordering "NONE"
 # export PYTHONPATH=$PWD && $SOURCE/forbiditerative/plan.py --planner supermultisetgroups_topk --domain $1 --problem $2 --number-of-plans $3 $QBOUND --symmetries --use-local-folder --keep-intermediate-tasks #--clean-local-folder --suppress-planners-output
 

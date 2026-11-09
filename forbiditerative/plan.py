@@ -355,6 +355,7 @@ if __name__ == "__main__":
     parser.add_argument("--sas-file", help="SAS+ problem file")
 
     parser.add_argument("--number-of-plans", help="The overall number of plans", type=int)
+    parser.add_argument("--prefix", help="Number of words to group operators by", type=int)
     parser.add_argument("--quality-bound", help="A relative (to an optimal plan cost) bound on the plans quality (>= 1.0)", type=float)
 
     parser.add_argument("--symmetries", help="Extend plans with symmetries", action="store_true")

@@ -47,6 +47,7 @@ class ForbidIterativeSearch : public SearchEngine {
     TaskReformulationType reformulate;
     bool change_operator_names;
     int number_of_plans;
+    int prefix = 1;
     bool dump_debug_info;
     bool dumping_plans_files;
     bool read_plans_and_dump_graph;

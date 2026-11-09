@@ -147,7 +147,9 @@ class Planner(object):
         pcargs["external_plans_path"] = plan_manager.get_plans_folder()
         pcargs["num_plans_to_read"] = num_existing_plans
         pcargs["num_previous_plans"] = 0
-
+        
+        if self._args.prefix:
+            pcargs["prefix"] = self._args.prefix
 
         if self._args.build:
             pcargs["build"] = self._args.build

@@ -161,11 +161,11 @@ class TopkSuperMultisetGroupsReformulationPlannerCall(ReformulationPlannerCall):
                "--search", "forbid_iterative(reformulate = FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS, \
                extend_plans_with_symmetry=sym, dump=false, change_operator_names=true, \
                number_of_plans={num_total_plans}, number_of_plans_to_read={num_plans_to_read}, \
-               external_plans_path={external_plans_path})".format(**kwargs)]
+               prefix={prefix}, external_plans_path={external_plans_path})".format(**kwargs)]
         else:
             return ["--search", "forbid_iterative(reformulate = FORBID_MULTIPLE_PLAN_SUPERMULTISET_GROUPS, \
                     dump=false, change_operator_names=true, number_of_plans={num_total_plans}, \
-                    number_of_plans_to_read={num_plans_to_read}, external_plans_path={external_plans_path})".format(**kwargs)]
+                    number_of_plans_to_read={num_plans_to_read}, prefix={prefix}, external_plans_path={external_plans_path})".format(**kwargs)]
 
 
 class BasePlannerCall(PlannerCall):

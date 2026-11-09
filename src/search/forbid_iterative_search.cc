@@ -39,6 +39,7 @@ ForbidIterativeSearch::ForbidIterativeSearch(const Options &opts)
       reformulate(TaskReformulationType(opts.get<TaskReformulationType>("reformulate"))),
       change_operator_names(opts.get<bool>("change_operator_names")),
       number_of_plans(opts.get<int>("number_of_plans")),
+      prefix(opts.get<int>("prefix")),
       dump_debug_info(opts.get<bool>("dump")),
       dumping_plans_files(opts.get<bool>("dumping_plans_files")),
       read_plans_and_dump_graph(opts.get<bool>("read_plans_and_dump_graph")),
@@ -630,7 +631,7 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
     // ASS: BEGIN GROUPING STUFF
     auto group_name_to_group_id = make_shared<unordered_map<string, int>>();
 
-    printf("Operator Grouping function: prefix_2\n");
+    printf("Operator Grouping function: prefix_%d\n", prefix);
 
     std::function<std::string(int)> get_group_name = [group_name_to_group_id](int group_no) {
         for (auto &it : *group_name_to_group_id) {
@@ -639,12 +640,24 @@ shared_ptr<AbstractTask> ForbidIterativeSearch::create_reformulated_task_super_m
         return std::string("No matching group");
     };
 
-    std::function<int(const std::shared_ptr<AbstractTask>, int)> f = [group_name_to_group_id](const std::shared_ptr<AbstractTask> task, int op_id) {
+    int pre = prefix;
+
+    std::function<int(const std::shared_ptr<AbstractTask>, int)> f = [group_name_to_group_id, pre](const std::shared_ptr<AbstractTask> task, int op_id) {
         // ASS: map from operator name (string) to group name (string)
-        std::function<string(std::string)> op_name_to_group_name = [](std::string op_name) {
+        std::function<string(std::string)> op_name_to_group_name = [pre](std::string op_name) {
             // ASS: This is prefix
-            // return op_name.substr(0, op_name.find(' ')); //. Prefix_1 (remember to change the name!!)
-            return op_name.substr(0, op_name.find(' ', op_name.find(' ') + 1)); //. Prefix_2 (remember to change the name!!)
+            int loc = 0;
+            for (int i = 0; i < pre; i++) {
+                loc = op_name.find(' ', loc);
+                if (loc == -1) {
+                    break;
+                }
+                loc++;
+            }
+            if (loc == -1) {
+                return op_name;
+            }
+            return op_name.substr(0, loc - 1); // Prefix
         };
 
         auto op_name = task->get_operator_name(op_id, false);
@@ -757,6 +770,8 @@ void ForbidIterativeSearch::add_forbid_plan_reformulation_option(OptionParser &p
     );
 
     parser.add_option<int>("number_of_plans_to_read", "Getting multiple plans as an input, reformulate", "0");
+
+    parser.add_option<int>("prefix", "Number of words to group operators by", OptionParser::NONE);
 
     parser.add_option<bool>("dump_states_json", "Getting multiple plans as an input, dumping into files sequences of states instead", "false");
 
